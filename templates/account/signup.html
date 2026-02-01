@@ -1,0 +1,75 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="max-w-md mx-auto mt-10">
+    <div class="card">
+        <header>
+            <h2 class="text-2xl font-bold">Sign Up</h2>
+            <p>Create a new account to get started.</p>
+        </header>
+
+        {% if form.errors %}
+        <div class="px-6 pt-2">
+            <div class="alert alert-destructive">
+                <section>
+                    {% for field in form %}
+                        {% for error in field.errors %}
+                            <p>{{ error }}</p>
+                        {% endfor %}
+                    {% endfor %}
+                    {% for error in form.non_field_errors %}
+                        <p>{{ error }}</p>
+                    {% endfor %}
+                </section>
+            </div>
+        </div>
+        {% endif %}
+
+        <form class="signup" id="signup_form" method="post" action="{% url 'account_signup' %}">
+            {% csrf_token %}
+
+            <section class="flex flex-col gap-6 py-6 px-1">
+                <div class="field">
+                    <label for="id_username" class="text-foreground font-medium mb-1.5">Username</label>
+                    <input type="text" name="username" placeholder="Username" autocomplete="username" required id="id_username" class="input w-full">
+                    {% if form.username.errors %}
+                    <p class="text-destructive text-sm mt-1">{{ form.username.errors.0 }}</p>
+                    {% endif %}
+                </div>
+
+                <div class="field">
+                    <label for="id_email" class="text-foreground font-medium mb-1.5">Email</label>
+                    <input type="email" name="email" placeholder="Email address" autocomplete="email" required id="id_email" class="input w-full">
+                    {% if form.email.errors %}
+                    <p class="text-destructive text-sm mt-1">{{ form.email.errors.0 }}</p>
+                    {% endif %}
+                </div>
+
+                <div class="field">
+                    <label for="id_password1" class="text-foreground font-medium mb-1.5">Password</label>
+                    <input type="password" name="password1" placeholder="Password" autocomplete="new-password" required id="id_password1" class="input w-full">
+                    <p class="text-xs text-muted-foreground mt-1">Must contain at least 8 characters.</p>
+                    {% if form.password1.errors %}
+                    <p class="text-destructive text-sm mt-1">{{ form.password1.errors.0 }}</p>
+                    {% endif %}
+                </div>
+
+                <div class="field">
+                    <label for="id_password22" class="text-foreground font-medium mb-1.5">Confirm Password</label>
+                    <input type="password" name="password2" placeholder="Confirm Password" autocomplete="new-password" required id="id_password22" class="input w-full">
+                    {% if form.password2.errors %}
+                    <p class="text-destructive text-sm mt-1">{{ form.password2.errors.0 }}</p>
+                    {% endif %}
+                </div>
+            </section>
+
+            <footer class="flex flex-col gap-4">
+                <button class="btn btn-primary w-full" type="submit">Sign Up</button>
+                <div class="text-center text-sm text-muted-foreground">
+                    Already have an account? <a href="{% url 'account_login' %}" class="text-foreground font-medium hover:underline">Sign in</a>
+                </div>
+            </footer>
+        </form>
+    </div>
+</div>
+{% endblock %}

@@ -1,0 +1,48 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="max-w-md mx-auto mt-10">
+    <div class="card">
+        <header>
+            <h2 class="text-2xl font-bold">Sign In</h2>
+            <p>Welcome back! Please sign in to continue.</p>
+        </header>
+
+        {% if form.errors %}
+        <div class="px-6 pt-2">
+            <div class="alert alert-destructive">
+                <section>
+                    <p>Comparison of email and password failed.</p>
+                </section>
+            </div>
+        </div>
+        {% endif %}
+
+        <form class="login" method="POST" action="{% url 'account_login' %}">
+            {% csrf_token %}
+
+            <section class="flex flex-col gap-6 py-6 px-1">
+                <div class="field">
+                    <label for="id_login" class="text-foreground font-medium mb-1.5">Email</label>
+                    <input type="email" name="login" placeholder="Email address" autocomplete="email" required id="id_login" class="input w-full">
+                </div>
+
+                <div class="field">
+                    <div class="flex justify-between items-center mb-1.5">
+                        <label for="id_password" class="text-foreground font-medium">Password</label>
+                        <a href="{% url 'account_reset_password' %}" class="text-sm text-primary hover:underline">Forgot password?</a>
+                    </div>
+                    <input type="password" name="password" placeholder="Password" autocomplete="current-password" required id="id_password" class="input w-full">
+                </div>
+            </section>
+
+            <footer class="flex flex-col gap-4">
+                <button class="btn btn-primary w-full" type="submit">Sign In</button>
+                <div class="text-center text-sm text-muted-foreground">
+                    Don't have an account? <a href="{% url 'account_signup' %}" class="text-foreground font-medium hover:underline">Sign up</a>
+                </div>
+            </footer>
+        </form>
+    </div>
+</div>
+{% endblock %}
