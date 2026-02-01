@@ -1,0 +1,6 @@
+basecoat-ant-venv/
+node_modules/
+__pycache__/
+*.pyc
+db.sqlite3
+.DS_Store

@@ -1,0 +1,5 @@
+@import "tailwindcss";
+@import "../../../node_modules/basecoat-css/dist/basecoat.css";
+
+@source "../../**/*.html";
+@source "../../**/*.py";

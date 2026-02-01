@@ -1,0 +1,8 @@
+@import "tailwindcss";
+@import "../../../node_modules/basecoat-css/dist/basecoat.css";
+
+/* Basecoat project static css is at basecoat_project/static/css/input.css */
+/* We need to go up 3 levels to reach root 'basecoat-ant' */
+
+@source "../../../templates/**/*.html";
+@source "../../../products/**/*.py";
