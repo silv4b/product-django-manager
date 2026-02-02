@@ -1,6 +1,7 @@
 {% load static %}
 <!DOCTYPE html>
-<html lang="pt-br" class="light">
+<html lang="pt-br" class="{{ request.session.theme|default:'light' }}">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -11,24 +12,6 @@
     <link href="{% static 'css/output.css' %}" rel="stylesheet">
     <script src="https://unpkg.com/lucide@latest"></script>
     <script>
-        // Check local storage or system preference
-        if (localStorage.theme === 'dark' || (!('theme' in localStorage) && window.matchMedia('(prefers-color-scheme: dark)').matches)) {
-            document.documentElement.classList.add('dark')
-        } else {
-            document.documentElement.classList.remove('dark')
-        }
-
-        function toggleTheme() {
-            const html = document.documentElement;
-            if (html.classList.contains('dark')) {
-                html.classList.remove('dark');
-                localStorage.theme = 'light';
-            } else {
-                html.classList.add('dark');
-                localStorage.theme = 'dark';
-            }
-        }
-
         function toggleLogoutModal(show) {
             const modal = document.getElementById('logoutModal');
             if (show) {
@@ -120,6 +103,7 @@
         });
     </script>
 </head>
+
 <body class="bg-background text-foreground antialiased min-h-screen flex flex-col font-sans overflow-y-scroll">
     <header class="border-b border-border bg-card/50 backdrop-blur-sm sticky top-0 z-10">
         <div class="container mx-auto px-4 h-16 flex justify-between items-center">
@@ -128,36 +112,46 @@
                 Basecoat Manager
             </a>
             <nav class="flex gap-2 items-center">
-                <button onclick="toggleTheme()" class="btn btn-icon btn-ghost bg-transparent border-none shadow-none hover:bg-muted text-foreground" aria-label="Toggle Theme">
+                <a href="{% url 'toggle_theme' %}"
+                    class="btn btn-icon btn-ghost bg-transparent border-none shadow-none hover:bg-muted text-foreground"
+                    aria-label="Alternar Tema">
                     <i data-lucide="sun" class="w-5 h-5 block dark:hidden"></i>
                     <i data-lucide="moon" class="w-5 h-5 hidden dark:block"></i>
-                </button>
+                </a>
 
                 {% if user.is_authenticated %}
-                    <a href="{% url 'public_product_list' %}" class="btn btn-ghost btn-sm bg-transparent border-none shadow-none text-foreground hover:bg-muted font-medium">Catálogo</a>
-                    <a href="{% url 'product_list' %}" class="btn btn-ghost btn-sm bg-transparent border-none shadow-none text-foreground hover:bg-muted font-medium">Dashboard</a>
-                    <a href="{% url 'product_create' %}" class="btn btn-ghost btn-sm bg-transparent border-none shadow-none text-foreground hover:bg-muted font-medium">
-                        <i data-lucide="plus" class="w-4 h-4"></i>
-                        Novo Produto
-                    </a>
+                <a href="{% url 'public_product_list' %}"
+                    class="btn btn-ghost btn-sm bg-transparent border-none shadow-none text-foreground hover:bg-muted font-medium">Catálogo</a>
+                <a href="{% url 'product_list' %}"
+                    class="btn btn-ghost btn-sm bg-transparent border-none shadow-none text-foreground hover:bg-muted font-medium">Dashboard</a>
+                <a href="{% url 'product_create' %}"
+                    class="btn btn-ghost btn-sm bg-transparent border-none shadow-none text-foreground hover:bg-muted font-medium">
+                    <i data-lucide="plus" class="w-4 h-4"></i>
+                    Novo Produto
+                </a>
 
-                    <!-- User Profile -->
-                    <a href="{% url 'profile' %}" class="flex items-center gap-2.5 px-3 py-1.5 border-l border-border ml-1 hover:bg-muted/50 transition-colors rounded-sm h-9">
-                        <div class="w-7 h-7 rounded-full bg-primary/10 flex items-center justify-center text-primary">
-                            <i data-lucide="user" class="w-3.5 h-3.5"></i>
-                        </div>
-                        <div class="hidden sm:flex flex-col">
-                            <span class="text-[11px] font-bold leading-none">{{ user.username }}</span>
-                            <span class="text-[9px] text-muted-foreground truncate max-w-[100px]">{{ user.email }}</span>
-                        </div>
-                    </a>
+                <!-- User Profile -->
+                <a href="{% url 'profile' %}"
+                    class="flex items-center gap-2.5 px-3 py-1.5 border-l border-border ml-1 hover:bg-muted/50 transition-colors rounded-sm h-9">
+                    <div class="w-7 h-7 rounded-full bg-primary/10 flex items-center justify-center text-primary">
+                        <i data-lucide="user" class="w-3.5 h-3.5"></i>
+                    </div>
+                    <div class="hidden sm:flex flex-col">
+                        <span class="text-[11px] font-bold leading-none">{{ user.username }}</span>
+                        <span class="text-[9px] text-muted-foreground truncate max-w-[100px]">{{ user.email }}</span>
+                    </div>
+                </a>
 
-                    <button onclick="toggleLogoutModal(true)" class="btn btn-icon btn-ghost btn-sm bg-transparent border-none shadow-none text-foreground hover:bg-muted font-medium" title="Sair">
-                        <i data-lucide="log-out" class="w-4 h-4"></i>
-                    </button>
+                <button onclick="toggleLogoutModal(true)"
+                    class="btn btn-icon btn-ghost btn-sm bg-transparent border-none shadow-none text-foreground hover:bg-muted font-medium"
+                    title="Sair">
+                    <i data-lucide="log-out" class="w-4 h-4"></i>
+                </button>
                 {% else %}
-                    <a href="{% url 'account_login' %}" class="btn btn-ghost btn-sm bg-transparent border-none shadow-none text-foreground hover:bg-muted">Entrar</a>
-                    <a href="{% url 'account_signup' %}" class="btn btn-ghost btn-sm bg-transparent border-none shadow-none text-foreground hover:bg-muted">Cadastrar</a>
+                <a href="{% url 'account_login' %}"
+                    class="btn btn-ghost btn-sm bg-transparent border-none shadow-none text-foreground hover:bg-muted">Entrar</a>
+                <a href="{% url 'account_signup' %}"
+                    class="btn btn-ghost btn-sm bg-transparent border-none shadow-none text-foreground hover:bg-muted">Cadastrar</a>
                 {% endif %}
             </nav>
         </div>
@@ -174,34 +168,38 @@
     </footer>
 
     <!-- Toast Container -->
-    <div id="toast-container" class="fixed bottom-6 right-6 z-[100] flex flex-col gap-3 min-w-[320px] max-w-md pointer-events-none">
+    <div id="toast-container"
+        class="fixed bottom-6 right-6 z-[100] flex flex-col gap-3 min-w-[320px] max-w-md pointer-events-none">
     </div>
 
     <!-- Hidden element to ensure Tailwind/Basecoat scans these classes -->
     <div class="hidden toast-primary toast-secondary toast-destructive toast-warning toast-info"></div>
 
     {% if messages %}
-        <div class="hidden">
-            {% for message in messages %}
-                <div class="django-message-data" data-message="{{ message }}" data-tags="{{ message.tags }}"></div>
-            {% endfor %}
-        </div>
+    <div class="hidden">
+        {% for message in messages %}
+        <div class="django-message-data" data-message="{{ message }}" data-tags="{{ message.tags }}"></div>
+        {% endfor %}
+    </div>
     {% endif %}
 
     {% if user.is_authenticated %}
     <!-- Logout Confirmation Modal -->
-    <div id="logoutModal" class="hidden fixed inset-0 z-50 bg-background/80 backdrop-blur-sm items-center justify-center p-4">
+    <div id="logoutModal"
+        class="hidden fixed inset-0 z-50 bg-background/80 backdrop-blur-sm items-center justify-center p-4">
         <div class="card max-w-sm w-full shadow-lg border-border animate-in fade-in zoom-in duration-200">
             <header>
                 <h2 class="text-xl font-bold">Confirmar Logout</h2>
                 <p>Tem certeza que deseja encerrar sua sessão?</p>
             </header>
             <section class="py-4">
-                <p class="text-sm text-muted-foreground">Você precisará digitar seu e-mail e senha novamente para acessar seus produtos.</p>
+                <p class="text-sm text-muted-foreground">Você precisará digitar seu e-mail e senha novamente para
+                    acessar seus produtos.</p>
             </section>
             <footer>
                 <div class="flex justify-end gap-3 w-full border-t border-border pt-4">
-                    <button onclick="toggleLogoutModal(false)" class="btn bg-white border border-gray-300 text-gray-700 hover:bg-gray-100">Cancelar</button>
+                    <button onclick="toggleLogoutModal(false)"
+                        class="btn bg-white border border-gray-300 text-gray-700 hover:bg-gray-100">Cancelar</button>
                     <form method="post" action="{% url 'account_logout' %}">
                         {% csrf_token %}
                         <button type="submit" class="btn btn-destructive">Confirmar Saída</button>
@@ -212,4 +210,5 @@
     </div>
     {% endif %}
 </body>
+
 </html>

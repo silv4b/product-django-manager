@@ -149,3 +149,9 @@ def public_product_list(request):
         'min_stock': min_stock,
         'max_stock': max_stock,
     })
+
+def toggle_theme(request):
+    current_theme = request.session.get('theme', 'light')
+    new_theme = 'dark' if current_theme == 'light' else 'light'
+    request.session['theme'] = new_theme
+    return redirect(request.META.get('HTTP_REFERER', '/'))
