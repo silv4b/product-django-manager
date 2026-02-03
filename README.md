@@ -1,4 +1,4 @@
-# Basecoat Manager
+# Product Django Manager
 
 O Basecoat Manager é um sistema de gerenciamento de inventário de produtos moderno, construído com foco em experiência do usuário, criado para testar o uso do Basecoat UI em um projeto Django.
 
