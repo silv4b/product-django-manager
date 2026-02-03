@@ -67,6 +67,39 @@
                 </section>
             </div>
 
+            <!-- Public Catalog Card -->
+            <div id="public-catalog" class="card bg-card transition-colors">
+                <header>
+                    <h3 class="text-lg font-bold flex items-center gap-2">
+                        <i data-lucide="share-2" class="w-5 h-5 text-primary"></i>
+                        Seu Catálogo Público
+                    </h3>
+                </header>
+
+                <section class="py-4 flex flex-col gap-4">
+                    <p class="text-sm text-muted-foreground">Compartilhe este link com seus clientes e parceiros para que eles vejam seus produtos marcados como <strong>Públicos</strong>.</p>
+
+                    <div class="flex gap-2">
+                        <div class="relative flex-1">
+                            <i data-lucide="link" class="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground"></i>
+                            <input type="text" readonly id="public-link-input"
+                                   value="{{ request.scheme }}://{{ request.get_host }}{% url 'user_public_catalog' user.username %}"
+                                   class="input w-full pl-10 bg-muted/30 cursor-default select-all text-sm h-10">
+                        </div>
+                        <button onclick="copyPublicLink()"
+                                class="w-10 h-10 flex items-center justify-center bg-background border border-border rounded text-muted-foreground hover:bg-muted transition-all"
+                                title="Copiar Link">
+                            <i data-lucide="copy" class="w-4 h-4" id="copy-icon"></i>
+                        </button>
+                        <a href="{% url 'user_public_catalog' user.username %}" target="_blank"
+                           class="w-10 h-10 flex items-center justify-center bg-background border border-border rounded text-muted-foreground hover:bg-muted transition-all"
+                           title="Abrir em Nova Aba">
+                            <i data-lucide="external-link" class="w-4 h-4"></i>
+                        </a>
+                    </div>
+                </section>
+            </div>
+
             <!-- Security Summary Card -->
             <div class="card bg-card">
                 <header>
@@ -180,5 +213,24 @@
 
     confirmUsername.addEventListener('input', validateDeletion);
     confirmPassword.addEventListener('input', validateDeletion);
+
+    function copyPublicLink() {
+        const input = document.getElementById('public-link-input');
+        const icon = document.getElementById('copy-icon');
+
+        input.select();
+        input.setSelectionRange(0, 99999);
+        navigator.clipboard.writeText(input.value);
+
+        icon.setAttribute('data-lucide', 'check');
+        icon.classList.add('text-green-500');
+        lucide.createIcons();
+
+        setTimeout(() => {
+            icon.setAttribute('data-lucide', 'copy');
+            icon.classList.remove('text-green-500');
+            lucide.createIcons();
+        }, 2000);
+    }
 </script>
 {% endblock %}

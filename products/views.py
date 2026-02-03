@@ -1,6 +1,7 @@
 from django.shortcuts import render, redirect, get_object_or_404
 from django.contrib.auth.decorators import login_required
 from django.db import models
+from django.contrib.auth.models import User
 from .models import Product, Category
 from .forms import ProductForm, CategoryForm
 from django.contrib import messages
@@ -155,12 +156,14 @@ def product_delete(request, pk):
     return render(request, "products/product_confirm_delete.html", {"product": product})
 
 
-@login_required
 def product_detail(request, pk):
     product = get_object_or_404(Product, pk=pk)
-    if not product.is_public and product.user != request.user:
-        messages.error(request, "Você não tem permissão para ver este produto.")
-        return redirect("product_list")
+
+    # Se o produto for privado, apenas o dono pode ver (exige estar logado e ser o dono)
+    if not product.is_public:
+        if not request.user.is_authenticated or product.user != request.user:
+            messages.error(request, "Você não tem permissão para ver este produto.")
+            return redirect("account_login")
 
     return render(request, "products/product_detail_modal.html", {"product": product})
 
@@ -302,6 +305,61 @@ def delete_account_view(request):
             return redirect("profile")
 
     return redirect("profile")
+
+
+def user_public_catalog(request, username):
+    catalog_user = get_object_or_404(User, username=username)
+    products = Product.objects.filter(user=catalog_user, is_public=True)
+
+    q = request.GET.get("q")
+    if q:
+        products = products.filter(name__icontains=q) | products.filter(
+            description__icontains=q
+        )
+
+    category_id = request.GET.get("category")
+    if category_id:
+        products = products.filter(categories=category_id)
+
+    min_price = request.GET.get("min_price")
+    max_price = request.GET.get("max_price")
+    if min_price:
+        products = products.filter(price__gte=min_price)
+    if max_price:
+        products = products.filter(price__lte=max_price)
+
+    min_stock = request.GET.get("min_stock")
+    max_stock = request.GET.get("max_stock")
+    if min_stock:
+        products = products.filter(stock__gte=min_stock)
+    if max_stock:
+        products = products.filter(stock__lte=max_stock)
+
+    products = products.distinct().order_by("-created_at")
+
+    stats = {
+        "total_count": products.count(),
+        "total_stock": sum(p.stock for p in products),
+        "total_value": sum(p.price * p.stock for p in products),
+    }
+
+    return render(
+        request,
+        "products/product_list.html",
+        {
+            "products": products,
+            "categories": Category.objects.all(),
+            "stats": stats,
+            "title": f"Catálogo de {catalog_user.username}",
+            "is_public_view": True,
+            "q": q,
+            "category_id": request.GET.get("category", ""),
+            "min_price": min_price,
+            "max_price": max_price,
+            "min_stock": min_stock,
+            "max_stock": max_stock,
+        },
+    )
 
 
 def public_product_list(request):

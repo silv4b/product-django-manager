@@ -6,13 +6,13 @@ O Kore é um sistema de gerenciamento de inventário de produtos moderno, constr
 
 O projeto utiliza as seguintes tecnologias:
 
-- Backend: Django (Python) 6.0+
+- Backend: [Python](https://www.python.org/) 3.10+ [Django](https://www.djangoproject.com/) 6.0+
 - Frontend: HTML5, JavaScript (Vanilla)
-- Estilização: Tailwind CSS v4.0+
-- UI Framework: Basecoat UI
-- Autenticação: Django Allauth
-- Banco de Dados: SQLite3
-- Ícones: Lucide Icons (via CDN)
+- Estilização: [Tailwind CSS](https://tailwindcss.com/) v4.0+
+- UI Framework: [Basecoat UI](https://basecoatui.com/)
+- Autenticação: [Django Allauth](https://docs.allauth.org/en/latest/)
+- Banco de Dados: [SQLite3](https://sqlite.org/)
+- Ícones: [Lucide Icons](https://lucide.dev/) (via CDN)
 
 ## Funcionalidades Principais
 

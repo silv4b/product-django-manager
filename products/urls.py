@@ -20,6 +20,9 @@ urlpatterns = [
     ),
     path("profile/", views.profile_view, name="profile"),
     path("profile/delete/", views.delete_account_view, name="delete_account"),
+    path(
+        "catalog/<str:username>/", views.user_public_catalog, name="user_public_catalog"
+    ),
     path("toggle-theme/", views.toggle_theme, name="toggle_theme"),
     path("logout/", views.logout_view, name="custom_logout"),
     path("view-mode/<str:mode>/", views.set_view_mode, name="set_view_mode"),
