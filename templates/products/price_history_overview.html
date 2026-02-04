@@ -1,3 +1,4 @@
+{% load static %}
 {% extends 'base.html' %}
 
 {% block content %}
@@ -217,112 +218,8 @@
         </div>
     </div>
 </div>
+{% endblock %}
 
-<script>
-    // --- Category Filter Command Logic ---
-    const commandContainer = document.getElementById('category-filter-command');
-    if (commandContainer) {
-        const searchInput = document.getElementById('category-filter-search');
-        const menu = document.getElementById('category-filter-menu');
-        const hiddenId = document.getElementById('hidden-category-id');
-        const options = commandContainer.querySelectorAll('.category-option');
-        const noFound = document.getElementById('no-category-found');
-        let currentSelectedName = searchInput.value;
-
-        const openMenu = () => {
-            menu.classList.remove('hidden');
-            searchInput.select();
-        };
-
-        const closeMenu = () => {
-            menu.classList.add('hidden');
-            searchInput.value = currentSelectedName;
-        };
-
-        searchInput.addEventListener('focus', openMenu);
-
-        document.addEventListener('click', (e) => {
-            if (!commandContainer.contains(e.target)) closeMenu();
-        });
-
-        searchInput.addEventListener('keydown', (e) => {
-            if (e.key === 'Enter') {
-                e.preventDefault();
-                const firstVisible = Array.from(options).find(opt => !opt.classList.contains('hidden'));
-                if (firstVisible) firstVisible.click();
-            }
-            if (e.key === 'Escape') closeMenu();
-        });
-
-        searchInput.addEventListener('input', (e) => {
-            const query = e.target.value.toLowerCase().trim();
-            let hasResults = false;
-
-            options.forEach(opt => {
-                const name = (opt.dataset.name || 'todas as categorias').toLowerCase();
-                if (name.includes(query)) {
-                    opt.classList.remove('hidden');
-                    hasResults = true;
-                } else {
-                    opt.classList.add('hidden');
-                }
-            });
-
-            noFound.classList.toggle('hidden', hasResults);
-        });
-
-        options.forEach(opt => {
-            opt.addEventListener('click', (e) => {
-                e.stopPropagation();
-                const id = opt.dataset.id;
-                const name = opt.dataset.name || 'Todas as Categorias';
-
-                hiddenId.value = id;
-                currentSelectedName = id ? name : '';
-                searchInput.value = currentSelectedName;
-                menu.classList.add('hidden');
-                commandContainer.closest('form').submit();
-            });
-        });
-    }
-
-    // Script simples para renderizar os Sparklines
-    document.addEventListener('DOMContentLoaded', () => {
-        document.querySelectorAll('.sparkline').forEach(svg => {
-            try {
-                // O Django renderiza a lista como string Python [1.0, 2.0], que é JSON válido
-                const data = JSON.parse(svg.dataset.values);
-                if (!data || data.length < 2) return;
-
-                const width = 128; // Largura fixa do SVG (w-32 = 8rem = 128px aprox)
-                const height = 32; // Altura fixa do SVG (h-8 = 2rem = 32px)
-                const max = Math.max(...data);
-                const min = Math.min(...data);
-                const range = max - min || 1; // Evita divisão por zero
-
-                // Margem interna para não cortar o pico
-                const padding = 2;
-                const drawHeight = height - (padding * 2);
-
-                const points = data.map((val, index) => {
-                    const x = (index / (data.length - 1)) * width;
-                    // Inverter Y porque SVG começa do topo
-                    const y = height - padding - ((val - min) / range) * drawHeight;
-                    return `${x},${y}`;
-                }).join(' ');
-
-                const polyline = document.createElementNS('http://www.w3.org/2000/svg', 'polyline');
-                polyline.setAttribute('points', points);
-                polyline.setAttribute('fill', 'none');
-                polyline.setAttribute('stroke', 'currentColor');
-                polyline.setAttribute('stroke-width', '2');
-                polyline.setAttribute('stroke-linecap', 'round');
-                polyline.setAttribute('stroke-linejoin', 'round');
-                svg.appendChild(polyline);
-            } catch (e) {
-                console.error("Erro ao desenhar sparkline", e);
-            }
-        });
-    });
-</script>
+{% block extra_scripts %}
+<script src="{% static 'js/price_history_overview.js' %}" defer></script>
 {% endblock %}

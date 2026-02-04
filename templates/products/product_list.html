@@ -1,4 +1,5 @@
 {% extends 'base.html' %}
+{% load static %}
 {% load l10n %}
 
 {% block content %}
@@ -340,73 +341,8 @@
 </div>
 
 </div>
+{% endblock %}
 
-<script>
-    // --- Category Filter Command Logic ---
-    const commandContainer = document.getElementById('category-filter-command');
-    if (commandContainer) {
-        const searchInput = document.getElementById('category-filter-search');
-        const menu = document.getElementById('category-filter-menu');
-        const hiddenId = document.getElementById('hidden-category-id');
-        const options = commandContainer.querySelectorAll('.category-option');
-        const noFound = document.getElementById('no-category-found');
-        let currentSelectedName = searchInput.value;
-
-        const openMenu = () => {
-            menu.classList.remove('hidden');
-            searchInput.select();
-        };
-
-        const closeMenu = () => {
-            menu.classList.add('hidden');
-            searchInput.value = currentSelectedName;
-        };
-
-        searchInput.addEventListener('focus', openMenu);
-
-        document.addEventListener('click', (e) => {
-            if (!commandContainer.contains(e.target)) closeMenu();
-        });
-
-        searchInput.addEventListener('keydown', (e) => {
-            if (e.key === 'Enter') {
-                e.preventDefault();
-                const firstVisible = Array.from(options).find(opt => !opt.classList.contains('hidden'));
-                if (firstVisible) firstVisible.click();
-            }
-            if (e.key === 'Escape') closeMenu();
-        });
-
-        searchInput.addEventListener('input', (e) => {
-            const query = e.target.value.toLowerCase().trim();
-            let hasResults = false;
-
-            options.forEach(opt => {
-                const name = (opt.dataset.name || 'todas as categorias').toLowerCase();
-                if (name.includes(query)) {
-                    opt.classList.remove('hidden');
-                    hasResults = true;
-                } else {
-                    opt.classList.add('hidden');
-                }
-            });
-
-            noFound.classList.toggle('hidden', hasResults);
-        });
-
-        options.forEach(opt => {
-            opt.addEventListener('click', (e) => {
-                e.stopPropagation();
-                const id = opt.dataset.id;
-                const name = opt.dataset.name || 'Todas as Categorias';
-
-                hiddenId.value = id;
-                currentSelectedName = id ? name : '';
-                searchInput.value = currentSelectedName;
-                menu.classList.add('hidden');
-                commandContainer.closest('form').submit();
-            });
-        });
-    }
-</script>
+{% block extra_scripts %}
+<script src="{% static 'js/product_list.js' %}" defer></script>
 {% endblock %}
