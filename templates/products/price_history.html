@@ -1,0 +1,209 @@
+{% extends "base.html" %}
+{% load l10n %}
+
+{% block content %}
+<div class="max-w-4xl mx-auto">
+    <!-- Header -->
+    <div class="mb-8">
+        <div class="flex items-center gap-3 mb-2">
+            <!-- <a href="{% url 'product_list' %}" class="text-muted-foreground hover:text-foreground transition-colors">
+                <i data-lucide="arrow-left" class="w-5 h-5"></i>
+            </a> -->
+            <div>
+                <h1 class="text-3xl font-bold tracking-tight">Histórico de Preços</h1>
+                <p class="text-muted-foreground">{{ product.name }}</p>
+            </div>
+        </div>
+    </div>
+
+    <!-- Stats Cards -->
+    <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-8">
+        <div class="card bg-card">
+            <div class="p-6">
+                <p class="text-[10px] font-bold uppercase tracking-widest text-muted-foreground mb-2">Preço Atual</p>
+                <p class="text-2xl font-bold text-primary">R$ {{ product.price|localize }}</p>
+            </div>
+        </div>
+        <div class="card bg-card">
+            <div class="p-6">
+                <p class="text-[10px] font-bold uppercase tracking-widest text-muted-foreground mb-2">Total de
+                    Alterações</p>
+                <p class="text-2xl font-bold text-foreground">{{ price_history.count }}</p>
+            </div>
+        </div>
+        <div class="card bg-card">
+            <div class="p-6">
+                <p class="text-[10px] font-bold uppercase tracking-widest text-muted-foreground mb-2">Primeira Alteração
+                </p>
+                <p class="text-sm font-medium text-foreground">{{ price_history.last.changed_at|date:"d/m/Y H:i" }}</p>
+            </div>
+        </div>
+    </div>
+
+    <!-- Filtros de Data -->
+    <div class="card bg-card mb-8">
+        <header>
+            <h2 class="text-lg font-bold flex items-center gap-2">
+                <i data-lucide="filter" class="w-5 h-5 text-primary"></i>
+                Filtrar por Período
+            </h2>
+            <p>Selecione um intervalo de datas para filtrar o histórico</p>
+        </header>
+        <section>
+            <form method="get" class="grid grid-cols-1 md:grid-cols-3 gap-4 items-end">
+                <div>
+                    <label for="data_inicio"
+                        class="text-[10px] font-bold uppercase tracking-widest text-muted-foreground block mb-2">
+                        Data Início
+                    </label>
+                    <input type="date" id="data_inicio" name="data_inicio" value="{{ data_inicio }}"
+                        class="input w-full">
+                </div>
+                <div>
+                    <label for="data_fim"
+                        class="text-[10px] font-bold uppercase tracking-widest text-muted-foreground block mb-2">
+                        Data Fim
+                    </label>
+                    <input type="date" id="data_fim" name="data_fim" value="{{ data_fim }}" class="input w-full">
+                </div>
+                <div class="flex gap-2">
+                    <button type="submit" class="btn btn-primary flex-1">
+                        <i data-lucide="search" class="w-4 h-4 mr-2"></i>
+                        Filtrar
+                    </button>
+                    {% if data_inicio or data_fim %}
+                    <a href="{% url 'price_history' product.pk %}" class="btn btn-ghost border border-border">
+                        <i data-lucide="x" class="w-4 h-4"></i>
+                    </a>
+                    {% endif %}
+                </div>
+            </form>
+        </section>
+    </div>
+
+    <!-- Gráfico Sparkline -->
+    {% if price_history %}
+    <div class="card bg-card mb-8">
+        <header>
+            <h2 class="text-lg font-bold flex items-center gap-2">
+                <i data-lucide="bar-chart-3" class="w-5 h-5 text-primary"></i>
+                Visualização Gráfica
+            </h2>
+            <p>Evolução dos preços ao longo do tempo</p>
+        </header>
+        <section>
+            <div class="p-6 bg-muted/20 rounded-lg border border-border/50">
+                <div class="flex items-end justify-between h-32 gap-2 w-full">
+                    {% with history=price_history|slice:":20" %}
+                    {% if history %}
+                    {% with max_item=history|dictsort:"price"|last %}
+                    {% with max_price=max_item.price %}
+                    {% for entry in history reversed %}
+                    {% widthratio entry.price max_price 100 as height_percent %}
+                    <div class="flex-1 bg-primary/60 hover:bg-primary transition-all rounded-t relative group cursor-pointer"
+                        style="height: {% if height_percent|add:0 < 15 %}15{% else %}{{ height_percent }}{% endif %}%">
+                        <div
+                            class="hidden group-hover:block absolute bottom-full left-1/2 -translate-x-1/2 mb-2 px-2 py-1 bg-foreground text-background text-[9px] rounded whitespace-nowrap z-10">
+                            R$ {{ entry.price|localize }}<br>{{ entry.changed_at|date:"d/m H:i" }}
+                        </div>
+                    </div>
+                    {% endfor %}
+                    {% endwith %}
+                    {% endwith %}
+                    {% endif %}
+                    {% endwith %}
+                </div>
+                <p class="text-[9px] text-muted-foreground mt-3 text-center">
+                    Últimas {{ price_history|slice:":20"|length }} alterações de preço
+                </p>
+            </div>
+        </section>
+    </div>
+    {% endif %}
+
+    <!-- Price History Table -->
+    <div class="card bg-card">
+        <header>
+            <h2 class="text-xl font-bold flex items-center gap-2">
+                <i data-lucide="trending-up" class="w-5 h-5 text-primary"></i>
+                Histórico Completo
+            </h2>
+            <p>Todas as alterações de preço registradas</p>
+        </header>
+
+        <section class="py-0">
+            {% if price_history %}
+            <div class="overflow-x-auto">
+                <table class="table">
+                    <thead>
+                        <tr>
+                            <th class="text-left">#</th>
+                            <th class="text-left">Preço</th>
+                            <th class="text-left">Data e Hora</th>
+                            <th class="text-right">Variação</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for entry in price_history %}
+                        <tr>
+                            <td class="text-muted-foreground text-sm">{{ forloop.counter }}</td>
+                            <td>
+                                <span class="font-mono font-bold text-lg">R$ {{ entry.price|localize }}</span>
+                            </td>
+                            <td class="text-sm text-muted-foreground">
+                                {{ entry.changed_at|date:"d/m/Y H:i:s" }}
+                            </td>
+                            <td class="text-right">
+                                {% if not forloop.last %}
+                                {% with next_entry=price_history|slice:forloop.counter|first %}
+                                {% if next_entry %}
+                                {% widthratio entry.price next_entry.price 1 as ratio %}
+                                {% if entry.price > next_entry.price %}
+                                <span class="inline-flex items-center gap-1 text-green-600 font-semibold text-sm">
+                                    <i data-lucide="trending-up" class="w-4 h-4"></i>
+                                    +{{ entry.price|floatformat:2|add:"-"|add:next_entry.price|floatformat:2 }}
+                                </span>
+                                {% elif entry.price < next_entry.price %}
+                                <span class="inline-flex items-center gap-1 text-destructive font-semibold text-sm">
+                                    <i data-lucide="trending-down" class="w-4 h-4"></i>
+                                    {{ entry.price|floatformat:2|add:"-"|add:next_entry.price|floatformat:2 }}
+                                </span>
+                                {% else %}
+                                <span class="text-muted-foreground text-sm">—</span>
+                                {% endif %}
+                                {% endif %}
+                                {% endwith %}
+                                {% else %}
+                                <span class="text-muted-foreground text-sm italic">Inicial</span>
+                                {% endif %}
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+            {% else %}
+            <div class="text-center py-12">
+                <i data-lucide="trending-up" class="w-12 h-12 text-muted-foreground mx-auto mb-4"></i>
+                <p class="text-muted-foreground">Nenhum histórico de preço disponível.</p>
+            </div>
+            {% endif %}
+        </section>
+
+        <footer>
+            <div class="flex justify-end gap-3">
+                <a href="{% url 'product_list' %}"
+                    class="btn btn-ghost border border-border bg-transparent text-foreground hover:bg-muted">
+                    Voltar
+                </a>
+                {% if product.user == user %}
+                <a href="{% url 'product_update' product.pk %}" class="btn btn-primary">
+                    <i data-lucide="pencil" class="w-4 h-4 mr-2"></i>
+                    Editar Produto
+                </a>
+                {% endif %}
+            </div>
+        </footer>
+    </div>
+</div>
+{% endblock %}

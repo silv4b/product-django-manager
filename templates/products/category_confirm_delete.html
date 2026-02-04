@@ -2,7 +2,7 @@
 
 {% block content %}
 <div class="max-w-md mx-auto mt-20">
-    <div class="card border-destructive/20 shadow-lg">
+    <div class="card border-destructive/20 shadow-lg p-6">
         <header class="flex flex-col items-center text-center gap-4">
             <div class="w-16 h-16 rounded-full bg-destructive/10 flex items-center justify-center text-destructive">
                 <i data-lucide="alert-triangle" class="w-8 h-8"></i>
@@ -10,7 +10,8 @@
             <div>
                 <h2 class="text-2xl font-bold text-foreground">Excluir Categoria?</h2>
                 <p class="text-muted-foreground mt-1">
-                    Você está prestes a excluir a categoria <strong class="text-foreground">"{{ category.name }}"</strong>.
+                    Você está prestes a excluir a categoria <strong
+                        class="text-foreground">"{{ category.name }}"</strong>.
                 </p>
             </div>
         </header>

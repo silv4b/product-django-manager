@@ -38,6 +38,21 @@ class Product(models.Model):
         return self.name
 
 
+class PriceHistory(models.Model):
+    product = models.ForeignKey(
+        Product, on_delete=models.CASCADE, related_name="price_history"
+    )
+    price = models.DecimalField(max_digits=10, decimal_places=2)
+    changed_at = models.DateTimeField(auto_now_add=True)
+
+    def __str__(self):
+        return f"{self.product.name} - R$ {self.price} em {self.changed_at.strftime('%d/%m/%Y %H:%M')}"
+
+    class Meta:
+        verbose_name_plural = "Price Histories"
+        ordering = ["-changed_at"]
+
+
 class Profile(models.Model):
     THEME_CHOICES = [
         ("light", "Light"),
@@ -71,3 +86,24 @@ def save_user_profile(sender, instance, **kwargs):
 def load_user_theme(sender, request, user, **kwargs):
     if hasattr(user, "profile"):
         request.session["theme"] = user.profile.theme
+
+
+@receiver(post_save, sender=Product)
+def track_price_changes(sender, instance, created, **kwargs):
+    """
+    Registra automaticamente mudanças de preço no histórico.
+    Cria um registro inicial quando o produto é criado.
+    """
+    if created:
+        # Primeiro registro de preço ao criar o produto
+        PriceHistory.objects.create(product=instance, price=instance.price)
+    else:
+        # Verifica se o preço mudou comparando com o último registro
+        last_price_entry = instance.price_history.first()
+
+        # Se não há histórico anterior, cria o primeiro registro
+        if not last_price_entry:
+            PriceHistory.objects.create(product=instance, price=instance.price)
+        # Se o preço mudou, cria um novo registro
+        elif last_price_entry.price != instance.price:
+            PriceHistory.objects.create(product=instance, price=instance.price)

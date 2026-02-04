@@ -2,7 +2,7 @@ from django.shortcuts import render, redirect, get_object_or_404
 from django.contrib.auth.decorators import login_required
 from django.db import models
 from django.contrib.auth.models import User
-from .models import Product, Category
+from .models import Product, Category, PriceHistory
 from .forms import ProductForm, CategoryForm
 from django.contrib import messages
 
@@ -166,6 +166,188 @@ def product_detail(request, pk):
             return redirect("account_login")
 
     return render(request, "products/product_detail_modal.html", {"product": product})
+
+
+def price_history_view(request, pk):
+    product = get_object_or_404(Product, pk=pk)
+
+    # Verificação de permissão
+    if not product.is_public:
+        if not request.user.is_authenticated or product.user != request.user:
+            messages.error(request, "Você não tem permissão para ver este produto.")
+            return redirect("account_login")
+
+    # Filtros de data
+    price_history = product.price_history.all()
+
+    data_inicio = request.GET.get("data_inicio")
+    data_fim = request.GET.get("data_fim")
+
+    if data_inicio:
+        try:
+            from datetime import datetime
+
+            data_inicio_obj = datetime.strptime(data_inicio, "%Y-%m-%d")
+            price_history = price_history.filter(changed_at__gte=data_inicio_obj)
+        except ValueError:
+            pass
+
+    if data_fim:
+        try:
+            from datetime import datetime, timedelta
+
+            data_fim_obj = datetime.strptime(data_fim, "%Y-%m-%d")
+            # Adiciona 1 dia para incluir todo o dia final
+            data_fim_obj = data_fim_obj + timedelta(days=1)
+            price_history = price_history.filter(changed_at__lt=data_fim_obj)
+        except ValueError:
+            pass
+
+    return render(
+        request,
+        "products/price_history.html",
+        {
+            "product": product,
+            "price_history": price_history,
+            "data_inicio": data_inicio,
+            "data_fim": data_fim,
+        },
+    )
+
+
+def price_history_overview(request):
+    """Dashboard consolidado de histórico de preços de todos os produtos"""
+    from django.db.models import Count
+    from datetime import datetime, timedelta
+
+    # Apenas produtos do usuário logado
+    if not request.user.is_authenticated:
+        messages.error(request, "Você precisa estar logado para acessar esta página.")
+        return redirect("account_login")
+
+    # Base Queryset com otimização de prefetch
+    user_products = Product.objects.filter(user=request.user).prefetch_related(
+        "price_history"
+    )
+
+    # Filtro por Termo de Busca (q)
+    q = request.GET.get("q", "")
+    if q:
+        user_products = user_products.filter(
+            models.Q(name__icontains=q) | models.Q(description__icontains=q)
+        )
+
+    # Filtro por Categoria
+    category_id = request.GET.get("category")
+    if category_id:
+        user_products = user_products.filter(categories__id=category_id)
+
+    # Estatísticas gerais
+    total_alteracoes = PriceHistory.objects.filter(product__in=user_products).count()
+
+    # Produto com mais alterações
+    produto_mais_alteracoes_obj = (
+        user_products.annotate(num_alteracoes=Count("price_history"))
+        .order_by("-num_alteracoes")
+        .first()
+    )
+    produto_mais_alteracoes = {
+        "produto": produto_mais_alteracoes_obj,
+        "count": (
+            produto_mais_alteracoes_obj.num_alteracoes
+            if produto_mais_alteracoes_obj
+            else 0
+        ),
+    }
+
+    # Calcular maior aumento e redução percentual
+    maior_aumento = {"produto": None, "percentual": 0}
+    maior_reducao = {"produto": None, "percentual": 0}
+
+    # Query otimizada para buscar os dois últimos preços de todos os produtos
+    from django.db.models import OuterRef, Subquery
+
+    latest_prices = PriceHistory.objects.filter(product=OuterRef("pk")).order_by(
+        "-changed_at"
+    )
+    products_with_prices = user_products.annotate(
+        current_price=Subquery(latest_prices.values("price")[:1]),
+        previous_price=Subquery(latest_prices.values("price")[1:2]),
+    ).filter(previous_price__isnull=False)
+
+    for p in products_with_prices:
+        if p.current_price > p.previous_price:
+            percentual = ((p.current_price - p.previous_price) / p.previous_price) * 100
+            if percentual > maior_aumento["percentual"]:
+                maior_aumento["percentual"] = percentual
+                maior_aumento["produto"] = p
+        elif p.current_price < p.previous_price:
+            percentual = ((p.previous_price - p.current_price) / p.previous_price) * 100
+            if percentual > maior_reducao["percentual"]:
+                maior_reducao["percentual"] = percentual
+                maior_reducao["produto"] = p
+
+    # Média de alterações por produto
+    total_produtos = user_products.count()
+    media_alteracoes = total_alteracoes / total_produtos if total_produtos > 0 else 0
+
+    # Produtos com seus históricos (para lista principal)
+    produtos_com_historico = []
+    for product in user_products:
+        # Ordenação em Python para aproveitar o prefetch_related e evitar N+1 queries
+        history = sorted(
+            product.price_history.all(), key=lambda x: x.changed_at, reverse=True
+        )
+
+        if not history:
+            continue
+
+        # Dados para o Sparkline (últimos 10 preços, ordem cronológica)
+        history_prices = [float(h.price) for h in history[:10]]
+        history_prices.reverse()  # Reverte para o gráfico (do mais antigo para o mais novo)
+
+        # Determinar tendência
+        latest = history[0]
+        previous = history[1] if len(history) > 1 else None
+        trend = "stable"
+
+        if previous:
+            if latest.price > previous.price:
+                trend = "up"
+            elif latest.price < previous.price:
+                trend = "down"
+
+        produtos_com_historico.append(
+            {
+                "produto": product,
+                "historico_precos": history_prices,
+                "total_alteracoes": len(history),
+                "ultima_alteracao": latest,
+                "trend": trend,
+            }
+        )
+
+    # Ordenar por data da última alteração
+    produtos_com_historico.sort(
+        key=lambda x: (
+            x["ultima_alteracao"].changed_at if x["ultima_alteracao"] else datetime.min
+        ),
+        reverse=True,
+    )
+
+    context = {
+        "total_alteracoes": total_alteracoes,
+        "produto_mais_alteracoes": produto_mais_alteracoes,
+        "maior_aumento": maior_aumento,
+        "maior_reducao": maior_reducao,
+        "media_alteracoes": media_alteracoes,
+        "produtos_com_historico": produtos_com_historico,
+        "categorias": Category.objects.filter(products__user=request.user).distinct(),
+        "selected_category": int(category_id) if category_id else "",
+        "q": q,
+    }
+
+    return render(request, "products/price_history_overview.html", context)
 
 
 # --- Category Views ---

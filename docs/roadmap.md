@@ -31,9 +31,9 @@ Tornar o catálogo visualmente atraente.
 
 Rastrear a flutuação de valor dos itens.
 
-- [ ] **Model**: Criar `PriceHistory(product, price, date)`.
-- [ ] **Signals**: Usar um `post_save` no `Product` para registrar mudanças de preço.
-- [ ] **Visualização**: Adicionar um mini-gráfico (Sparkline) no modal de detalhes do produto.
+- [x] **Model**: Criar `PriceHistory(product, price, date)`.
+- [x] **Signals**: Usar um `post_save` no `Product` para registrar mudanças de preço.
+- [x] **Visualização**: Adicionar um mini-gráfico (Sparkline) no modal de detalhes do produto.
 
 ## 2. Melhorias de UX com HTMX (Foco em Performance)
 
