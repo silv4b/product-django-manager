@@ -171,9 +171,12 @@
                                 <div class="flex gap-1 mt-1">
                                     {% for cat in item.produto.categories.all %}
                                     <span
-                                        class="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-muted text-muted-foreground">
+                                        class="badge text-[10px] py-0.5 px-2 border-none text-white font-bold uppercase"
+                                        style="background-color: {{ cat.color }}">
                                         {{ cat.name }}
                                     </span>
+                                    {% empty %}
+                                    <span class="text-muted-foreground text-xs italic">Sem cat.</span>
                                     {% endfor %}
                                 </div>
                             </td>
