@@ -1,11 +1,14 @@
 {% load l10n %}
-<div class="fixed inset-0 z-50 bg-background/80 backdrop-blur-sm flex items-center justify-center p-4 animate-in fade-in duration-200"
+<div class="fixed inset-0 z-50 bg-background/80 backdrop-blur-sm flex items-center justify-center p-0 sm:p-4 md:p-6 animate-in fade-in duration-200"
     onclick="if(event.target === this) closeModal()">
-    <div class="card max-w-2xl w-full shadow-2xl border-border animate-in zoom-in duration-300 overflow-hidden">
-        <header class="flex justify-between items-center p-6 border-b border-border bg-muted/30">
+
+    <div
+        class="card w-full h-full sm:h-auto sm:max-w-2xl sm:max-h-[90dvh] flex flex-col overflow-hidden rounded-none sm:rounded-xl shadow-2xl border-border animate-in zoom-in duration-300 bg-card">
+
+        <header class="flex justify-between items-center p-5 sm:p-6 border-b border-border shrink-0">
             <div>
-                <h2 class="text-2xl font-bold tracking-tight text-foreground">{{ product.name }}</h2>
-                <p class="text-sm text-muted-foreground">Detalhes completos do produto</p>
+                <h2 class="text-xl sm:text-2xl font-bold tracking-tight text-foreground mb-2">{{ product.name }}</h2>
+                <p class="text-xs sm:text-sm text-muted-foreground">Detalhes do produto</p>
             </div>
             <button onclick="closeModal()"
                 class="btn btn-icon btn-ghost bg-transparent border-none text-muted-foreground hover:text-foreground">
@@ -13,7 +16,7 @@
             </button>
         </header>
 
-        <section class="p-8 grid grid-cols-1 md:grid-cols-2 gap-8">
+        <section class="p-6 sm:p-8 grid grid-cols-1 md:grid-cols-2 gap-6 overflow-y-auto flex-1 custom-scrollbar">
             <div class="space-y-6">
                 <div>
                     <label class="text-[10px] font-bold uppercase tracking-widest text-muted-foreground">Preço de
@@ -45,17 +48,6 @@
 
                 <div>
                     <label
-                        class="text-[10px] font-bold uppercase tracking-widest text-muted-foreground">Visibilidade</label>
-                    <div class="mt-1">
-                        <span
-                            class="badge {% if product.is_public %}badge-secondary bg-green-100 text-green-800 border-green-200{% else %}badge-outline text-muted-foreground{% endif %}">
-                            {% if product.is_public %}Público no Catálogo{% else %}Privado (Somente você){% endif %}
-                        </span>
-                    </div>
-                </div>
-
-                <div>
-                    <label
                         class="text-[10px] font-bold uppercase tracking-widest text-muted-foreground">Categorias</label>
                     <div class="flex flex-wrap gap-1.5 mt-1">
                         {% for cat in product.categories.all %}
@@ -63,53 +55,29 @@
                             style="background-color: {{ cat.color }}">
                             {{ cat.name }}
                         </span>
-                        {% empty %}
-                        <span class="text-xs text-muted-foreground italic">Nenhuma categoria vinculada.</span>
                         {% endfor %}
                     </div>
                 </div>
             </div>
+            <!-- GRÁFICO DE HISTÓRICO DE PREÇOS-->
 
             <div class="space-y-6">
-                <div class="pt-4 border-t border-border/50">
+                <div class="pt-4 border-t border-border/50 md:border-none">
                     <div class="flex items-center justify-between mb-3">
                         <label
                             class="text-[10px] font-bold uppercase tracking-widest text-muted-foreground flex items-center gap-2">
                             <i data-lucide="trending-up" class="w-3 h-3"></i>
                             Histórico de Preços
                         </label>
-                        {% if product.price_history.count > 5 %}
+
                         <a href="{% url 'price_history' product.pk %}"
-                            class="text-[10px] font-bold text-primary hover:underline flex items-center gap-1">
-                            Ver Tudo ({{ product.price_history.count }})
+                            class="text-[10px] font-bold text-primary hover:underline flex items-center gap-1 transition-colors">
+                            VER TUDO
                             <i data-lucide="arrow-right" class="w-3 h-3"></i>
                         </a>
-                        {% endif %}
                     </div>
 
                     {% if product.price_history.all %}
-                    <!-- Mini Sparkline Gráfico -->
-                    <!-- <div class="mt-3 p-4 bg-muted/20 rounded-lg border border-border/50">
-                        <div class="flex items-end justify-between h-16 gap-1.5 w-full">
-                            {% with history=product.price_history.all|slice:":5" %}
-                            {% if history %}
-                            {% with max_price=history.0.price %}
-                            {% for entry in history reversed %}
-                            {% widthratio entry.price max_price 100 as height_percent %}
-                            <div class="flex-1 bg-primary/60 hover:bg-primary transition-all rounded-t relative group cursor-pointer max-h-full"
-                                style="height: {% if height_percent|add:0 < 20 %}20{% else %}{{ height_percent }}{% endif %}%">
-                                <div
-                                    class="hidden group-hover:block absolute bottom-full left-1/2 -translate-x-1/2 mb-2 px-2 py-1 bg-foreground text-background text-[9px] rounded whitespace-nowrap z-10">
-                                    R$ {{ entry.price|localize }}<br>{{ entry.changed_at|date:"d/m H:i" }}
-                                </div>
-                            </div>
-                            {% endfor %}
-                            {% endwith %}
-                            {% endif %}
-                            {% endwith %}
-                        </div>
-                        <p class="text-[9px] text-muted-foreground mt-2 text-center">Últimas 5 alterações de preço</p>
-                    </div> -->
                     <div class="mt-3 p-4 bg-muted/20 rounded-lg border border-border/50">
                         <div class="flex items-end justify-between h-16 gap-1.5 w-full">
                             {% with history=product.price_history.all|slice:":5" %}
@@ -122,7 +90,7 @@
                                 style="height: {% if height_percent|add:0 < 20 %}20{% else %}{{ height_percent }}{% endif %}%">
                                 <div
                                     class="hidden group-hover:block absolute bottom-full left-1/2 -translate-x-1/2 mb-2 px-2 py-1 bg-foreground text-background text-[9px] rounded whitespace-nowrap z-10">
-                                    R$ {{ entry.price|localize }}<br>{{ entry.changed_at|date:"d/m H:i" }}
+                                    R$ {{ entry.price|localize }}
                                 </div>
                             </div>
                             {% endfor %}
@@ -131,23 +99,19 @@
                             {% endif %}
                             {% endwith %}
                         </div>
-                        <p class="text-[9px] text-muted-foreground mt-2 text-center">Últimas 5 alterações de preço</p>
+                        <p class="text-[9px] text-muted-foreground mt-2 text-center">Últimas 5 alterações</p>
                     </div>
 
-                    <!-- Lista de Histórico -->
-                    <div class="mt-3 space-y-1.5 max-h-[200px] overflow-y-auto custom-scrollbar">
+                    <div class="mt-3 space-y-1.5 max-h-37.5 overflow-y-auto custom-scrollbar">
                         {% for entry in product.price_history.all|slice:":5" %}
                         <div
-                            class="flex items-center justify-between text-xs p-2 rounded hover:bg-muted/30 transition-colors">
+                            class="flex items-center justify-between text-xs p-2 rounded hover:bg-muted/30 transition-colors border-b border-border/50 last:border-0">
                             <span class="font-mono font-semibold text-foreground">R$ {{ entry.price|localize }}</span>
                             <span
                                 class="text-muted-foreground text-[10px]">{{ entry.changed_at|date:"d/m/Y H:i" }}</span>
                         </div>
                         {% endfor %}
                     </div>
-                    {% else %}
-                    <p class="text-xs text-muted-foreground italic mt-2">Nenhuma alteração de preço registrada ainda.
-                    </p>
                     {% endif %}
                 </div>
 
@@ -158,27 +122,28 @@
                         </div>
                         <div>
                             <p class="text-[10px] font-bold uppercase text-muted-foreground">Proprietário</p>
-                            <p class="text-sm font-medium">{{ product.user.username }}</p>
+                            <p class="text-sm font-medium">{{ product..user.username }}</p>
                         </div>
                     </div>
                 </div>
 
                 <div>
-                    <p class="text-[10px] text-muted-foreground">Criado em: {{ product.created_at|date:"d/m/Y H:i" }}
+                    <p class="text-[12px] text-muted-foreground">Criado em: {{ product.created_at|date:"d/m/Y H:i" }}
                     </p>
-                    <p class="text-[10px] text-muted-foreground">Atualizado em:
+                    <p class="text-[12px] text-muted-foreground">Atualizado em:
                         {{ product.updated_at|date:"d/m/Y H:i" }}</p>
                 </div>
             </div>
         </section>
 
-        <footer class="p-6 bg-muted/30 border-t border-border flex justify-end gap-3">
+        <footer class="p-5 border-t border-border flex flex-col-reverse sm:flex-row justify-end gap-3 shrink-0">
             <button onclick="closeModal()"
-                class="btn btn-ghost border border-border bg-transparent text-foreground hover:bg-muted px-6">
+                class="btn btn-ghost border border-border bg-transparent text-foreground hover:bg-muted px-6 w-full sm:w-auto h-12 sm:h-10">
                 Fechar
             </button>
             {% if product.user == user %}
-            <a href="{% url 'product_update' product.pk %}" class="btn btn-primary px-6">
+            <a href="{% url 'product_update' product.pk %}"
+                class="btn btn-primary px-6 w-full sm:w-auto flex justify-center items-center h-12 sm:h-10">
                 <i data-lucide="pencil" class="w-4 h-4 mr-2"></i>
                 Editar Produto
             </a>

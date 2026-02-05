@@ -15,13 +15,14 @@
 </head>
 
 <body class="bg-background text-foreground antialiased min-h-screen flex flex-col font-sans overflow-y-scroll">
-    <header class="border-b border-border bg-card/50 backdrop-blur-sm sticky top-0 z-10">
+    <header class="border-b border-border bg-card/50 backdrop-blur-sm sticky top-0 z-50">
         <div class="container mx-auto px-4 h-16 flex justify-between items-center">
             <a href="{% url 'product_list' %}" class="text-xl font-bold flex items-center gap-2">
                 <i data-lucide="package" class="w-6 h-6"></i>
                 Kore
             </a>
-            <nav class="flex gap-2 items-center">
+
+            <nav class="flex gap-1 md:gap-2 items-center">
                 <a href="{% url 'toggle_theme' %}"
                     class="btn btn-icon btn-ghost bg-transparent border-none shadow-none hover:bg-muted text-foreground"
                     aria-label="Alternar Tema">
@@ -31,53 +32,56 @@
 
                 {% if user.is_authenticated %}
                 <a href="{% url 'public_product_list' %}"
-                    class="btn btn-ghost btn-sm bg-transparent border-none shadow-none text-foreground hover:bg-muted font-medium">
+                    class="btn btn-ghost btn-sm bg-transparent border-none shadow-none text-foreground hover:bg-muted font-medium flex items-center gap-2 px-2 md:px-3"
+                    title="Catálogo">
                     <i data-lucide="clipboard" class="w-4 h-4"></i>
-                    Catálogo
+                    <span class="hidden lg:inline">Catálogo</span>
                 </a>
-                <a href="{% url 'product_list' %}"
-                    class="btn btn-ghost btn-sm bg-transparent border-none shadow-none text-foreground hover:bg-muted font-medium">
-                    <i data-lucide="circle-gauge" class="w-4 h-4"></i>
-                    Dashboard
-                </a>
-                <a href="{% url 'category_list' %}"
-                    class="btn btn-ghost btn-sm bg-transparent border-none shadow-none text-foreground hover:bg-muted font-medium">
-                    <i data-lucide="tag" class="w-4 h-4"></i>
-                    Categorias
-                </a>
-                <a href="{% url 'price_history_overview' %}"
-                    class="btn btn-ghost btn-sm bg-transparent border-none shadow-none text-foreground hover:bg-muted font-medium">
-                    <i data-lucide="history" class="w-4 h-4"></i>
-                    Histórico de Preços
-                </a>
-                {% comment %} <a href="{% url 'product_create' %}"
-                    class="btn btn-ghost btn-sm bg-transparent border-none shadow-none text-foreground hover:bg-muted font-medium">
-                    <i data-lucide="plus" class="w-4 h-4"></i>
-                    Novo Produto
-                </a> {% endcomment %}
 
-                <!-- User Profile -->
+                <a href="{% url 'product_list' %}"
+                    class="btn btn-ghost btn-sm bg-transparent border-none shadow-none text-foreground hover:bg-muted font-medium flex items-center gap-2 px-2 md:px-3"
+                    title="Dashboard">
+                    <i data-lucide="circle-gauge" class="w-4 h-4"></i>
+                    <span class="hidden lg:inline">Dashboard</span>
+                </a>
+
+                <a href="{% url 'category_list' %}"
+                    class="btn btn-ghost btn-sm bg-transparent border-none shadow-none text-foreground hover:bg-muted font-medium flex items-center gap-2 px-2 md:px-3"
+                    title="Categorias">
+                    <i data-lucide="tag" class="w-4 h-4"></i>
+                    <span class="hidden lg:inline">Categorias</span>
+                </a>
+
+                <a href="{% url 'price_history_overview' %}"
+                    class="btn btn-ghost btn-sm bg-transparent border-none shadow-none text-foreground hover:bg-muted font-medium flex items-center gap-2 px-2 md:px-3"
+                    title="Histórico de Preços">
+                    <i data-lucide="history" class="w-4 h-4"></i>
+                    <span class="hidden lg:inline">Histórico de Preços</span>
+                </a>
+
                 <a href="{% url 'profile' %}"
-                    class="flex items-center gap-2.5 px-3 py-1.5 border-l border-border ml-1 hover:bg-muted/50 transition-colors rounded-sm h-9">
-                    <div class="w-7 h-7 rounded-full bg-primary/10 flex items-center justify-center text-primary">
+                    class="flex items-center gap-2 px-2 md:px-3 py-1.5 border-l border-border ml-1 hover:bg-muted/50 transition-colors rounded-sm h-9">
+                    <div
+                        class="w-7 h-7 shrink-0 rounded-full bg-primary/10 flex items-center justify-center text-primary">
                         <i data-lucide="user" class="w-3.5 h-3.5"></i>
                     </div>
-                    <div class="hidden sm:flex flex-col">
+                    <div class="hidden sm:flex flex-col text-left">
                         <span class="text-[11px] font-bold leading-none">{{ user.username }}</span>
-                        <span class="text-[9px] text-muted-foreground truncate max-w-[100px]">{{ user.email }}</span>
+                        <span class="text-[9px] text-muted-foreground truncate max-w-[80px]">{{ user.email }}</span>
                     </div>
                 </a>
 
                 <button onclick="toggleLogoutModal(true)"
-                    class="btn btn-icon btn-ghost btn-sm bg-transparent border-none shadow-none text-foreground hover:bg-muted font-medium"
+                    class="btn btn-icon btn-ghost btn-sm bg-transparent border-none shadow-none text-foreground hover:bg-muted"
                     title="Sair">
-                    <i data-lucide="log-out" class="w-4 h-4"></i>
+                    <i data-lucide="log-out" class="w-4 h-4 text-destructive"></i>
                 </button>
+
                 {% else %}
                 <a href="{% url 'account_login' %}"
-                    class="btn btn-ghost btn-sm bg-transparent border-none shadow-none text-foreground hover:bg-muted">Entrar</a>
+                    class="btn btn-ghost btn-sm text-foreground hover:bg-muted px-2">Entrar</a>
                 <a href="{% url 'account_signup' %}"
-                    class="btn btn-ghost btn-sm bg-transparent border-none shadow-none text-foreground hover:bg-muted">Cadastrar</a>
+                    class="btn btn-ghost btn-sm text-foreground hover:bg-muted px-2">Cadastrar</a>
                 {% endif %}
             </nav>
         </div>
