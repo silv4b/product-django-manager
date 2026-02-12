@@ -3,7 +3,7 @@
 {% load l10n %}
 
 {% block content %}
-<div class="flex flex-col gap-6">
+<div class="flex flex-col gap-6" id="product-list-container" data-view-mode="{{ view_mode }}">
     <!-- Header & Search/Filter Toolbar -->
     <div class="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
         <div>
@@ -145,8 +145,7 @@
     <!-- Stats Row -->
     <div class="grid grid-cols-1 sm:grid-cols-3 gap-4">
         <!-- Total de Produtos -->
-        <div
-            class="card p-6 flex flex-col items-center justify-center text-center gap-3 bg-primary/3 border-dashed border-primary/30">
+        <div class="card p-6 flex flex-col items-center justify-center text-center gap-3">
             <div class="w-12 h-12 rounded-full bg-primary/10 flex items-center justify-center text-primary mb-1">
                 <i data-lucide="package" class="w-6 h-6"></i>
             </div>
@@ -158,8 +157,7 @@
         </div>
 
         <!-- Itens em Estoque -->
-        <div
-            class="card p-6 flex flex-col items-center justify-center text-center gap-3 bg-primary/3 border-dashed border-primary/30">
+        <div class="card p-6 flex flex-col items-center justify-center text-center gap-3">
             <div class="w-12 h-12 rounded-full bg-primary/10 flex items-center justify-center text-primary mb-1">
                 <i data-lucide="boxes" class="w-6 h-6"></i>
             </div>
@@ -171,8 +169,7 @@
         </div>
 
         <!-- Valor Total -->
-        <div
-            class="card p-6 flex flex-col items-center justify-center text-center gap-3 bg-primary/3 border-dashed border-primary/30">
+        <div class="card p-6 flex flex-col items-center justify-center text-center gap-3">
             <div class="w-12 h-12 rounded-full bg-primary/10 flex items-center justify-center text-primary mb-1">
                 <i data-lucide="dollar-sign" class="w-6 h-6"></i>
             </div>
@@ -186,265 +183,380 @@
     </div>
     {% endif %}
 
-    <!-- Grid View -->
-    <div id="view-grid"
-        class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 {% if view_mode == 'table' %}hidden{% endif %}">
-        <!-- Grid com cards dos produtos -->
-        {% for product in products %}
-        <div class="card flex flex-col h-full hover:shadow-md transition-shadow cursor-pointer group"
-            hx-get="{% url 'product_detail' product.pk %}" hx-target="#modal-container">
+    <!-- Bulk Action Form -->
+    <form id="bulk-actions-form" action="{% url 'product_bulk_action' %}" method="POST">
+        {% csrf_token %}
+        <input type="hidden" name="action" id="bulk-action-input" value="">
 
-            <header>
-                <div class="flex justify-between items-start w-full">
-                    <div>
-                        <h2 class="text-xl font-bold line-clamp-1 mb-2">{{ product.name }}</h2>
-                        <p class="text-lg font-bold text-primary">R$ {{ product.price|localize }}</p>
-                    </div>
-                    <div class="flex flex-col items-end gap-1.5 shrink-0">
+        <!-- Bulk Action Bar -->
+        <div id="bulk-action-bar" style="display: none !important;"
+            class="card p-4 mb-6 border-primary/20 bg-primary/[0.01] shadow-sm animate-in fade-in slide-in-from-top-4 duration-300">
+            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-4 items-center">
+
+                <!-- 1. Contador -->
+                <div class="flex items-center gap-3">
+                    <div class="bg-primary text-primary-foreground text-xs font-black w-9 h-9 rounded-lg flex items-center justify-center shadow-lg shadow-primary/20"
+                        id="selected-count-badge">0</div>
+                    <div class="flex flex-col">
                         <span
-                            class="badge {% if product.stock > 0 %}badge-secondary{% else %}badge-destructive{% endif %} text-[12px]">
-                            Estoque: {{ product.stock }}
-                        </span>
-                        <span
-                            class="text-[10px] uppercase font-bold px-2 py-0.5 rounded-full {% if product.is_public %}bg-green-100 text-green-700{% else %}bg-gray-100 text-gray-600{% endif %}">
-                            {{ product.is_public|yesno:"Público,Privado" }}
-                        </span>
+                            class="text-[10px] font-bold uppercase tracking-widest text-muted-foreground leading-none mb-1">Itens</span>
+                        <span class="text-sm font-black whitespace-nowrap">Selecionados</span>
                     </div>
                 </div>
-            </header>
 
-            <section class="mt-2 flex-1">
-                <p class="text-sm text-muted-foreground line-clamp-2 h-10 mb-3">
-                    {{ product.description|default:"Nenhuma descrição fornecida." }}
-                </p>
-
-                <div class="flex flex-wrap gap-1.5 mb-2">
-                    {% for cat in product.categories.all %}
-                    <span class="badge text-[10px] py-0 h-5 px-2 border-none text-white whitespace-nowrap"
-                        style="background-color: {{ cat.color }}">
-                        {{ cat.name }}
-                    </span>
-                    {% empty %}
-                    <span class="text-[10px] text-muted-foreground italic">Sem categoria</span>
-                    {% endfor %}
-                </div>
-
-                {% if is_public_view %}
-                <p class="text-xs text-muted-foreground italic">Por: {{ product.user.username }}</p>
-                {% endif %}
-            </section>
-
-            <footer class="mt-auto pt-4">
-                <div class="flex gap-2 w-full">
-                    {% if product.user == user %}
-                    <a href="{% url 'product_update' product.pk %}" onclick="event.stopPropagation()"
-                        class="btn btn-sm btn-ghost bg-transparent border border-border text-foreground hover:bg-muted flex-1 font-medium h-9">
-                        <i data-lucide="pencil" class="w-3.5 h-3.5"></i>
-                        Editar
-                    </a>
-                    <a href="{% url 'product_delete' product.pk %}" onclick="event.stopPropagation()"
-                        class="btn btn-sm btn-ghost bg-transparent border border-border text-destructive hover:bg-destructive/10 flex-1 font-medium h-9">
-                        <i data-lucide="trash-2" class="w-3.5 h-3.5"></i>
-                        Excluir
-                    </a>
-                    <a href="{% url 'product_movement' product.pk %}" onclick="event.stopPropagation()"
-                        class="btn btn-sm btn-ghost bg-transparent border border-border text-primary hover:bg-primary/10 w-10 p-0 font-medium h-9"
-                        title="Movimentações">
-                        <i data-lucide="history" class="w-3.5 h-3.5"></i>
-                    </a>
-                    {% else %}
-                    <button class="btn btn-sm btn-ghost flex-1 opacity-50 cursor-not-allowed" disabled>
-                        Somente Visualização
+                <!-- 2. Visibilidade (Botões Individuais) -->
+                <div class="flex items-center gap-2">
+                    <button type="button" onclick="submitBulkAction('make_public')"
+                        class="btn btn-ghost border border-border bg-background h-10 flex-1 text-foreground hover:bg-muted font-bold flex items-center justify-center gap-2 shadow-sm transition-all group"
+                        title="Tornar Públicos">
+                        <i data-lucide="eye"
+                            class="w-4 h-4 text-green-500 group-hover:scale-110 transition-transform"></i>
+                        Público
                     </button>
-                    {% endif %}
+                    <button type="button" onclick="submitBulkAction('make_private')"
+                        class="btn btn-ghost border border-border bg-background h-10 flex-1 text-foreground hover:bg-muted font-bold flex items-center justify-center gap-2 shadow-sm transition-all group"
+                        title="Tornar Privados">
+                        <i data-lucide="eye-off"
+                            class="w-4 h-4 text-muted-foreground group-hover:scale-110 transition-transform"></i>
+                        Privado
+                    </button>
                 </div>
-            </footer>
+
+                <!-- 3. Seletor de Categoria -->
+                <div class="relative" id="bulk-category-selector">
+                    <input type="hidden" name="bulk_category_id" id="bulk-category-id">
+                    <div class="relative group cursor-pointer">
+                        <i data-lucide="tag"
+                            class="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground"></i>
+                        <input type="text" id="bulk-category-search" placeholder="Adicionar Categoria..."
+                            class="input w-full pl-10 h-10 text-sm bg-background border-border/50" autocomplete="off">
+                    </div>
+                    <div id="bulk-category-menu"
+                        class="hidden absolute top-full left-0 w-full mt-2 z-[60] card shadow-2xl p-1 animate-in fade-in slide-in-from-top-2">
+                        <div class="max-h-48 overflow-y-auto custom-scrollbar" id="bulk-category-list">
+                            {% for cat in categories %}
+                            <div class="bulk-category-option p-2.5 flex items-center gap-2 hover:bg-muted rounded-md cursor-pointer transition-colors text-sm"
+                                data-id="{{ cat.id }}" data-name="{{ cat.name }}">
+                                <div class="w-2.5 h-2.5 rounded-full" style="background-color: {{ cat.color }}"></div>
+                                <span>{{ cat.name }}</span>
+                            </div>
+                            {% endfor %}
+                        </div>
+                    </div>
+                </div>
+
+                <!-- 4. Botão Aplicar -->
+                <button type="button" id="bulk-apply-cat-btn" disabled onclick="submitBulkAction('add_category')"
+                    class="btn btn-ghost border border-border bg-background h-10 text-foreground hover:bg-muted font-bold flex items-center justify-center gap-2 shadow-sm transition-all disabled:opacity-50 disabled:cursor-not-allowed">
+                    <i data-lucide="plus" class="w-4 h-4 text-primary"></i>
+                    Aplicar Categoria
+                </button>
+
+                <!-- 5. Ações de Perigo e Fechar -->
+                <div class="flex items-center gap-2">
+                    <button type="button" onclick="submitBulkAction('delete')"
+                        class="btn btn-ghost border border-border bg-background h-10 flex-1 text-destructive hover:bg-destructive/10 font-bold flex items-center justify-center gap-2 shadow-sm transition-all"
+                        data-confirm="Excluir permanentemente?">
+                        <i data-lucide="trash-2" class="w-4 h-4"></i>
+                        Excluir
+                    </button>
+                    <button type="button" onclick="clearSelection()"
+                        class="btn btn-ghost border border-border bg-background h-10 w-10 p-0 text-muted-foreground hover:bg-muted shadow-sm transition-all"
+                        title="Cancelar Seleção">
+                        <i data-lucide="rotate-ccw" class="w-4 h-4"></i>
+                    </button>
+                </div>
+            </div>
         </div>
+</div>
 
-        {% empty %}
-        {% include "products/empty_state.html" %}
-        {% endfor %}
-    </div>
+<!-- Grid View -->
+<div id="view-grid"
+    class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 {% if view_mode == 'table' %}hidden{% endif %}">
+    <!-- Grid com cards dos produtos -->
+    {% for product in products %}
+    <div class="card flex flex-col h-full hover:shadow-md transition-shadow cursor-pointer group relative overflow-hidden"
+        hx-get="{% url 'product_detail' product.pk %}" hx-target="#modal-container">
 
-    <!-- Table View -->
-    <div id="view-table" class="{% if view_mode == 'grid' %}hidden{% endif %}">
-        <div class="card overflow-hidden">
-            <div class="overflow-x-auto">
-                <table class="w-full text-sm text-left">
-                    <thead class="bg-muted/50 border-b border-border">
-                        {% with current_sort=request.GET.sort|default:"name" current_dir=request.GET.dir|default:"asc" %}
-                        <tr>
-                            <th class="px-6 py-4 font-semibold">
-                                <a href="?sort=name&dir={% if current_sort == 'name' and current_dir == 'asc' %}desc{% else %}asc{% endif %}"
-                                    class="flex items-center gap-1.5 hover:text-primary transition-colors group">
-                                    Nome
-                                    {% if current_sort == 'name' %}
-                                    <i data-lucide="chevron-{% if current_dir == 'asc' %}up{% else %}down{% endif %}"
-                                        class="w-4 h-4 text-primary"></i>
-                                    {% else %}
-                                    <i data-lucide="arrow-up-down"
-                                        class="w-3.5 h-3.5 text-muted-foreground opacity-0 group-hover:opacity-100 transition-opacity"></i>
-                                    {% endif %}
-                                </a>
-                            </th>
+        {% if product.user == user and not is_public_view %}
+        <!-- Checkbox for Bulk Selection (Hidden in Grid view as requested) -->
+        <div class="absolute top-3 left-3 z-20 transition-opacity {% if view_mode == 'grid' %}hidden{% endif %}"
+            id="checkbox-container-{{ product.pk }}">
+            <input type="checkbox" name="product_ids" value="{{ product.pk }}"
+                class="checkbox-product w-5 h-5 rounded border-border bg-background checked:bg-primary cursor-pointer transition-all hover:scale-110"
+                onclick="event.stopPropagation()">
+        </div>
+        {% endif %}
 
-                            <th class="px-6 py-4 font-semibold">
-                                <a href="?sort=category&dir={% if current_sort == 'category' and current_dir == 'asc' %}desc{% else %}asc{% endif %}"
-                                    class="flex items-center gap-1.5 hover:text-primary transition-colors group">
-                                    Categoria
-                                    {% if current_sort == 'category' %}
-                                    <i data-lucide="chevron-{% if current_dir == 'asc' %}up{% else %}down{% endif %}"
-                                        class="w-4 h-4 text-primary"></i>
-                                    {% else %}
-                                    <i data-lucide="arrow-up-down"
-                                        class="w-3.5 h-3.5 text-muted-foreground opacity-0 group-hover:opacity-100 transition-opacity"></i>
-                                    {% endif %}
-                                </a>
-                            </th>
-
-                            <th class="px-6 py-4 font-semibold">
-                                <a href="?sort=price&dir={% if current_sort == 'price' and current_dir == 'asc' %}desc{% else %}asc{% endif %}"
-                                    class="flex items-center gap-1.5 hover:text-primary transition-colors group">
-                                    Preço
-                                    {% if current_sort == 'price' %}
-                                    <i data-lucide="chevron-{% if current_dir == 'asc' %}up{% else %}down{% endif %}"
-                                        class="w-4 h-4 text-primary"></i>
-                                    {% else %}
-                                    <i data-lucide="arrow-up-down"
-                                        class="w-3.5 h-3.5 text-muted-foreground opacity-0 group-hover:opacity-100 transition-opacity"></i>
-                                    {% endif %}
-                                </a>
-                            </th>
-
-                            <th class="px-6 py-4 font-semibold">
-                                <a href="?sort=stock&dir={% if current_sort == 'stock' and current_dir == 'asc' %}desc{% else %}asc{% endif %}"
-                                    class="flex items-center gap-1.5 hover:text-primary transition-colors group">
-                                    Estoque
-                                    {% if current_sort == 'stock' %}
-                                    <i data-lucide="chevron-{% if current_dir == 'asc' %}up{% else %}down{% endif %}"
-                                        class="w-4 h-4 text-primary"></i>
-                                    {% else %}
-                                    <i data-lucide="arrow-up-down"
-                                        class="w-3.5 h-3.5 text-muted-foreground opacity-0 group-hover:opacity-100 transition-opacity"></i>
-                                    {% endif %}
-                                </a>
-                            </th>
-
-                            <th class="px-6 py-4 font-semibold">
-                                <a href="?sort=status&dir={% if current_sort == 'status' and current_dir == 'asc' %}desc{% else %}asc{% endif %}"
-                                    class="flex items-center gap-1.5 hover:text-primary transition-colors group">
-                                    Status
-                                    {% if current_sort == 'status' %}
-                                    <i data-lucide="chevron-{% if current_dir == 'asc' %}up{% else %}down{% endif %}"
-                                        class="w-4 h-4 text-primary"></i>
-                                    {% else %}
-                                    <i data-lucide="arrow-up-down"
-                                        class="w-3.5 h-3.5 text-muted-foreground opacity-0 group-hover:opacity-100 transition-opacity"></i>
-                                    {% endif %}
-                                </a>
-                            </th>
-
-                            {% if is_public_view %}
-                            <th class="px-6 py-4 font-semibold">
-                                <a href="?sort=user&dir={% if current_sort == 'user' and current_dir == 'asc' %}desc{% else %}asc{% endif %}"
-                                    class="flex items-center gap-1.5 hover:text-primary transition-colors group">
-                                    Dono
-                                    {% if current_sort == 'user' %}
-                                    <i data-lucide="chevron-{% if current_dir == 'asc' %}up{% else %}down{% endif %}"
-                                        class="w-4 h-4 text-primary"></i>
-                                    {% else %}
-                                    <i data-lucide="arrow-up-down"
-                                        class="w-3.5 h-3.5 text-muted-foreground opacity-0 group-hover:opacity-100 transition-opacity"></i>
-                                    {% endif %}
-                                </a>
-                            </th>
-                            {% endif %}
-
-                            <th class="px-6 py-4 font-semibold text-right">Ações</th>
-                        </tr>
-                        {% endwith %}
-                    </thead>
-                    <tbody class="divide-y divide-border">
-                        {% for product in products %}
-                        <tr class="hover:bg-muted/30 transition-colors">
-                            <td class="px-6 py-4">
-                                <div class="font-medium text-foreground">{{ product.name }}</div>
-                                <div class="text-xs text-muted-foreground line-clamp-1 max-w-xs">
-                                    {{ product.description }}</div>
-                            </td>
-                            <td class="px-6 py-4">
-                                <div class="flex flex-wrap gap-1">
-                                    {% for cat in product.categories.all %}
-                                    <span
-                                        class="badge text-[10px] py-0.5 px-2 border-none text-white font-bold"
-                                        style="background-color: {{ cat.color }}">
-                                        {{ cat.name }}
-                                    </span>
-                                    {% empty %}
-                                    <span class="text-muted-foreground text-xs italic">Sem cat.</span>
-                                    {% endfor %}
-                                </div>
-                            </td>
-                            <td class="px-6 py-4 font-medium text-primary">R$ {{ product.price|localize }}</td>
-                            <td class="px-6 py-4">
-                                <span
-                                    class="{% if product.stock == 0 %}text-destructive font-bold{% endif %}">{{ product.stock }}</span>
-                            </td>
-                            <td class="px-6 py-4">
-                                <span
-                                    class="text-[10px] uppercase font-bold px-2 py-0.5 rounded-full {% if product.is_public %}bg-green-100 text-green-700{% else %}bg-gray-100 text-gray-600{% endif %}">
-                                    {{ product.is_public|yesno:"Público,Privado" }}
-                                </span>
-                            </td>
-                            {% if is_public_view %}
-                            <td class="px-6 py-4 text-muted-foreground">{{ product.user.username }}</td>
-                            {% endif %}
-                            <td class="px-6 py-4 text-right">
-                                <div class="flex justify-end gap-1.5">
-                                    <button hx-get="{% url 'product_detail' product.pk %}" hx-target="#modal-container"
-                                        class="w-8 h-8 flex items-center justify-center bg-background border border-border rounded text-muted-foreground hover:bg-muted transition-all"
-                                        title="Visualizar Detalhes">
-                                        <i data-lucide="eye" class="w-4 h-4"></i>
-                                    </button>
-                                    <a href="{% url 'product_movement' product.pk %}"
-                                        class="w-8 h-8 flex items-center justify-center bg-background border border-border rounded text-muted-foreground hover:bg-muted transition-all"
-                                        title="Movimentações de Estoque">
-                                        <i data-lucide="history" class="w-4 h-4"></i>
-                                    </a>
-                                    {% if product.user == user %}
-                                    <a href="{% url 'product_update' product.pk %}"
-                                        class="w-8 h-8 flex items-center justify-center bg-background border border-border rounded text-muted-foreground hover:bg-muted transition-all"
-                                        title="Editar">
-                                        <i data-lucide="pencil" class="w-4 h-4"></i>
-                                    </a>
-                                    <a href="{% url 'product_delete' product.pk %}"
-                                        class="w-8 h-8 flex items-center justify-center bg-background border border-border rounded text-destructive hover:bg-destructive/10 transition-all"
-                                        title="Excluir">
-                                        <i data-lucide="trash-2" class="w-4 h-4"></i>
-                                    </a>
-                                    {% else %}
-                                    <div class="w-8 h-8 flex items-center justify-center text-muted-foreground opacity-40 bg-muted/20 rounded border border-border"
-                                        title="Somente Visualização">
-                                        <i data-lucide="lock" class="w-4 h-4"></i>
-                                    </div>
-                                    {% endif %}
-                                </div>
-                            </td>
-                        </tr>
-                        {% endfor %}
-                    </tbody>
-                </table>
+        <header>
+            <div class="flex justify-between items-start w-full">
+                <div>
+                    <h2 class="text-xl font-bold line-clamp-1 mb-2">{{ product.name }}</h2>
+                    <p class="text-lg font-bold text-primary">R$ {{ product.price|localize }}</p>
+                </div>
+                <div class="flex flex-col items-end gap-1.5 shrink-0">
+                    <span
+                        class="badge {% if product.stock > 0 %}badge-secondary{% else %}badge-destructive{% endif %} text-[12px]">
+                        Estoque: {{ product.stock }}
+                    </span>
+                    <span
+                        class="text-[10px] uppercase font-bold px-2 py-0.5 rounded-full {% if product.is_public %}bg-green-100 text-green-700{% else %}bg-gray-100 text-gray-600{% endif %}">
+                        {{ product.is_public|yesno:"Público,Privado" }}
+                    </span>
+                </div>
             </div>
-            {% if not products %}
-            <div class="py-12">
-                {% include "products/empty_state.html" %}
+        </header>
+
+        <section class="mt-2 flex-1">
+            <p class="text-sm text-muted-foreground line-clamp-2 h-10 mb-3">
+                {{ product.description|default:"Nenhuma descrição fornecida." }}
+            </p>
+
+            <div class="flex flex-wrap gap-1.5 mb-2">
+                {% for cat in product.categories.all %}
+                <span class="badge text-[10px] py-0 h-5 px-2 border-none text-white whitespace-nowrap"
+                    style="background-color: {{ cat.color }}">
+                    {{ cat.name }}
+                </span>
+                {% empty %}
+                <span class="text-[10px] text-muted-foreground italic">Sem categoria</span>
+                {% endfor %}
             </div>
+
+            {% if is_public_view %}
+            <p class="text-xs text-muted-foreground italic">Por: {{ product.user.username }}</p>
             {% endif %}
-        </div>
+        </section>
+
+        <footer class="mt-auto pt-4">
+            <div class="flex gap-2 w-full">
+                {% if product.user == user %}
+                <a href="{% url 'product_update' product.pk %}" onclick="event.stopPropagation()"
+                    class="btn btn-sm btn-ghost bg-transparent border border-border text-foreground hover:bg-muted flex-1 font-medium h-9">
+                    <i data-lucide="pencil" class="w-3.5 h-3.5"></i>
+                    Editar
+                </a>
+                <button type="button" hx-get="{% url 'product_delete' product.pk %}" hx-target="#modal-container"
+                    onclick="event.stopPropagation()"
+                    class="btn btn-sm btn-ghost bg-transparent border border-border text-destructive hover:bg-destructive/10 flex-1 font-medium h-9"
+                    title="Excluir">
+                    <i data-lucide="trash-2" class="w-3.5 h-3.5"></i>
+                    Excluir
+                </button>
+                <a href="{% url 'product_movement' product.pk %}" onclick="event.stopPropagation()"
+                    class="btn btn-sm btn-ghost bg-transparent border border-border text-primary hover:bg-primary/10 w-10 p-0 font-medium h-9"
+                    title="Movimentações">
+                    <i data-lucide="history" class="w-3.5 h-3.5"></i>
+                </a>
+                {% else %}
+                <button type="button" class="btn btn-sm btn-ghost flex-1 opacity-50 cursor-not-allowed" disabled>
+                    Somente Visualização
+                </button>
+                {% endif %}
+            </div>
+        </footer>
     </div>
+
+    {% empty %}
+    {% include "products/empty_state.html" %}
+    {% endfor %}
 </div>
 
+<!-- Table View -->
+<div id="view-table" class="{% if view_mode == 'grid' %}hidden{% endif %}">
+    <div class="card overflow-hidden">
+        <div class="overflow-x-auto">
+            <table class="w-full text-sm text-left">
+                <thead class="bg-muted/50 border-b border-border">
+                    {% with current_sort=request.GET.sort|default:"name" current_dir=request.GET.dir|default:"asc" %}
+                    <tr>
+                        {% if not is_public_view %}
+                        <th class="px-6 py-4 w-4">
+                            <input type="checkbox" id="select-all"
+                                class="w-4 h-4 rounded border-border bg-background checked:bg-primary cursor-pointer">
+                        </th>
+                        {% endif %}
+                        <th class="px-6 py-4 font-semibold">
+                            <a href="?sort=name&dir={% if current_sort == 'name' and current_dir == 'asc' %}desc{% else %}asc{% endif %}"
+                                class="flex items-center gap-1.5 hover:text-primary transition-colors group">
+                                Nome
+                                {% if current_sort == 'name' %}
+                                <i data-lucide="chevron-{% if current_dir == 'asc' %}up{% else %}down{% endif %}"
+                                    class="w-4 h-4 text-primary"></i>
+                                {% else %}
+                                <i data-lucide="arrow-up-down"
+                                    class="w-3.5 h-3.5 text-muted-foreground opacity-0 group-hover:opacity-100 transition-opacity"></i>
+                                {% endif %}
+                            </a>
+                        </th>
+
+                        <th class="px-6 py-4 font-semibold">
+                            <a href="?sort=category&dir={% if current_sort == 'category' and current_dir == 'asc' %}desc{% else %}asc{% endif %}"
+                                class="flex items-center gap-1.5 hover:text-primary transition-colors group">
+                                Categoria
+                                {% if current_sort == 'category' %}
+                                <i data-lucide="chevron-{% if current_dir == 'asc' %}up{% else %}down{% endif %}"
+                                    class="w-4 h-4 text-primary"></i>
+                                {% else %}
+                                <i data-lucide="arrow-up-down"
+                                    class="w-3.5 h-3.5 text-muted-foreground opacity-0 group-hover:opacity-100 transition-opacity"></i>
+                                {% endif %}
+                            </a>
+                        </th>
+
+                        <th class="px-6 py-4 font-semibold">
+                            <a href="?sort=price&dir={% if current_sort == 'price' and current_dir == 'asc' %}desc{% else %}asc{% endif %}"
+                                class="flex items-center gap-1.5 hover:text-primary transition-colors group">
+                                Preço
+                                {% if current_sort == 'price' %}
+                                <i data-lucide="chevron-{% if current_dir == 'asc' %}up{% else %}down{% endif %}"
+                                    class="w-4 h-4 text-primary"></i>
+                                {% else %}
+                                <i data-lucide="arrow-up-down"
+                                    class="w-3.5 h-3.5 text-muted-foreground opacity-0 group-hover:opacity-100 transition-opacity"></i>
+                                {% endif %}
+                            </a>
+                        </th>
+
+                        <th class="px-6 py-4 font-semibold">
+                            <a href="?sort=stock&dir={% if current_sort == 'stock' and current_dir == 'asc' %}desc{% else %}asc{% endif %}"
+                                class="flex items-center gap-1.5 hover:text-primary transition-colors group">
+                                Estoque
+                                {% if current_sort == 'stock' %}
+                                <i data-lucide="chevron-{% if current_dir == 'asc' %}up{% else %}down{% endif %}"
+                                    class="w-4 h-4 text-primary"></i>
+                                {% else %}
+                                <i data-lucide="arrow-up-down"
+                                    class="w-3.5 h-3.5 text-muted-foreground opacity-0 group-hover:opacity-100 transition-opacity"></i>
+                                {% endif %}
+                            </a>
+                        </th>
+
+                        <th class="px-6 py-4 font-semibold">
+                            <a href="?sort=status&dir={% if current_sort == 'status' and current_dir == 'asc' %}desc{% else %}asc{% endif %}"
+                                class="flex items-center gap-1.5 hover:text-primary transition-colors group">
+                                Status
+                                {% if current_sort == 'status' %}
+                                <i data-lucide="chevron-{% if current_dir == 'asc' %}up{% else %}down{% endif %}"
+                                    class="w-4 h-4 text-primary"></i>
+                                {% else %}
+                                <i data-lucide="arrow-up-down"
+                                    class="w-3.5 h-3.5 text-muted-foreground opacity-0 group-hover:opacity-100 transition-opacity"></i>
+                                {% endif %}
+                            </a>
+                        </th>
+
+                        {% if is_public_view %}
+                        <th class="px-6 py-4 font-semibold">
+                            <a href="?sort=user&dir={% if current_sort == 'user' and current_dir == 'asc' %}desc{% else %}asc{% endif %}"
+                                class="flex items-center gap-1.5 hover:text-primary transition-colors group">
+                                Dono
+                                {% if current_sort == 'user' %}
+                                <i data-lucide="chevron-{% if current_dir == 'asc' %}up{% else %}down{% endif %}"
+                                    class="w-4 h-4 text-primary"></i>
+                                {% else %}
+                                <i data-lucide="arrow-up-down"
+                                    class="w-3.5 h-3.5 text-muted-foreground opacity-0 group-hover:opacity-100 transition-opacity"></i>
+                                {% endif %}
+                            </a>
+                        </th>
+                        {% endif %}
+
+                        <th class="px-6 py-4 font-semibold text-right">Ações</th>
+                    </tr>
+                    {% endwith %}
+                </thead>
+                <tbody class="divide-y divide-border">
+                    {% for product in products %}
+                    <tr class="hover:bg-muted/30 transition-colors">
+                        {% if not is_public_view %}
+                        <td class="px-6 py-4">
+                            {% if product.user == user %}
+                            <input type="checkbox" name="product_ids" value="{{ product.pk }}"
+                                class="checkbox-product w-4 h-4 rounded border-border bg-background checked:bg-primary cursor-pointer">
+                            {% endif %}
+                        </td>
+                        {% endif %}
+                        <td class="px-6 py-4">
+                            <div class="font-medium text-foreground">{{ product.name }}</div>
+                            <div class="text-xs text-muted-foreground line-clamp-1 max-w-xs">
+                                {{ product.description }}</div>
+                        </td>
+                        <td class="px-6 py-4">
+                            <div class="flex flex-wrap gap-1">
+                                {% for cat in product.categories.all %}
+                                <span class="badge text-[10px] py-0.5 px-2 border-none text-white font-bold"
+                                    style="background-color: {{ cat.color }}">
+                                    {{ cat.name }}
+                                </span>
+                                {% empty %}
+                                <span class="text-muted-foreground text-xs italic">Sem cat.</span>
+                                {% endfor %}
+                            </div>
+                        </td>
+                        <td class="px-6 py-4 font-medium text-primary">R$ {{ product.price|localize }}</td>
+                        <td class="px-6 py-4">
+                            <span
+                                class="{% if product.stock == 0 %}text-destructive font-bold{% endif %}">{{ product.stock }}</span>
+                        </td>
+                        <td class="px-6 py-4">
+                            <span
+                                class="text-[10px] uppercase font-bold px-2 py-0.5 rounded-full {% if product.is_public %}bg-green-100 text-green-700{% else %}bg-gray-100 text-gray-600{% endif %}">
+                                {{ product.is_public|yesno:"Público,Privado" }}
+                            </span>
+                        </td>
+                        {% if is_public_view %}
+                        <td class="px-6 py-4 text-muted-foreground">{{ product.user.username }}</td>
+                        {% endif %}
+                        <td class="px-6 py-4 text-right">
+                            <div class="flex justify-end gap-1.5">
+                                <button type="button" hx-get="{% url 'product_detail' product.pk %}"
+                                    hx-target="#modal-container"
+                                    class="w-8 h-8 flex items-center justify-center bg-background border border-border rounded text-muted-foreground hover:bg-muted transition-all"
+                                    title="Visualizar Detalhes">
+                                    <i data-lucide="eye" class="w-4 h-4"></i>
+                                </button>
+                                <a href="{% url 'product_movement' product.pk %}"
+                                    class="w-8 h-8 flex items-center justify-center bg-background border border-border rounded text-muted-foreground hover:bg-muted transition-all"
+                                    title="Movimentações de Estoque">
+                                    <i data-lucide="history" class="w-4 h-4"></i>
+                                </a>
+                                {% if product.user == user %}
+                                <a href="{% url 'product_update' product.pk %}"
+                                    class="w-8 h-8 flex items-center justify-center bg-background border border-border rounded text-muted-foreground hover:bg-muted transition-all"
+                                    title="Editar">
+                                    <i data-lucide="pencil" class="w-4 h-4"></i>
+                                </a>
+                                <button type="button" hx-get="{% url 'product_delete' product.pk %}"
+                                    hx-target="#modal-container"
+                                    class="w-8 h-8 flex items-center justify-center bg-background border border-border rounded text-destructive hover:bg-destructive/10 transition-all"
+                                    title="Excluir">
+                                    <i data-lucide="trash-2" class="w-4 h-4"></i>
+                                </button>
+                                {% else %}
+                                <div class="w-8 h-8 flex items-center justify-center text-muted-foreground opacity-40 bg-muted/20 rounded border border-border"
+                                    title="Somente Visualização">
+                                    <i data-lucide="lock" class="w-4 h-4"></i>
+                                </div>
+                                {% endif %}
+                            </div>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+        {% if not products %}
+        <div class="py-12">
+            {% include "products/empty_state.html" %}
+        </div>
+        {% endif %}
+    </div>
 </div>
+</form>
+
+</div>
+{% include "products/bulk_action_modal.html" %}
 {% endblock %}
 
 {% block extra_scripts %}

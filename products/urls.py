@@ -24,6 +24,7 @@ urlpatterns = [
     path("add/", views.product_create, name="product_create"),
     path("edit/<int:pk>/", views.product_update, name="product_update"),
     path("delete/<int:pk>/", views.product_delete, name="product_delete"),
+    path("bulk-action/", views.product_bulk_action, name="product_bulk_action"),
     # Categories
     path("categories/", views.category_list, name="category_list"),
     path("categories/add/", views.category_create, name="category_create"),

@@ -85,8 +85,8 @@ Facilitar o manejo de grandes volumes de dados.
 
 ### Ações em Massa (Bulk Actions)
 
-- [ ] **UI**: Adicionar checkboxes em cada linha da tabela.
-- [ ] **Funcionalidade**: Botões globais para "Excluir Selecionados" ou "Tornar Públicos" em um único clique.
+- [x] **UI**: Adicionar checkboxes em cada linha da tabela.
+- [x] **Funcionalidade**: Botões globais para "Excluir Selecionados" ou "Tornar Públicos" em um único clique.
 
 ## Próximos Passos Sugeridos
 

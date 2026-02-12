@@ -192,7 +192,60 @@ def product_delete(request, pk):
         product.delete()
         messages.success(request, f'Produto "{product_name}" removido permanentemente.')
         return redirect("product_list")
+
+    # Se for uma requisição HTMX, renderiza o modal
+    if request.headers.get("HX-Request"):
+        return render(
+            request, "products/product_delete_modal.html", {"product": product}
+        )
+
     return render(request, "products/product_confirm_delete.html", {"product": product})
+
+
+@login_required
+def product_bulk_action(request):
+    """
+    Realiza ações em massa (excluir, público, privado) em múltiplos produtos.
+    """
+    if request.method == "POST":
+        product_ids = request.POST.getlist("product_ids")
+        action = request.POST.get("action")
+
+        if not product_ids:
+            messages.warning(request, "Nenhum produto selecionado.")
+            return redirect("product_list")
+
+        # Filtra apenas produtos que pertencem ao usuário logado
+        products = Product.objects.filter(id__in=product_ids, user=request.user)
+        count = products.count()
+
+        if action == "delete":
+            products.delete()
+            messages.success(request, f"{count} produtos excluídos com sucesso.")
+        elif action == "make_public":
+            products.update(is_public=True)
+            messages.success(request, f"{count} produtos marcados como Públicos.")
+        elif action == "make_private":
+            products.update(is_public=False)
+            messages.success(request, f"{count} produtos marcados como Privados.")
+        elif action == "add_category":
+            category_id = request.POST.get("bulk_category_id")
+            if category_id:
+                category = get_object_or_404(
+                    Category, id=category_id, user=request.user
+                )
+                for product in products:
+                    product.categories.add(category)
+                messages.success(
+                    request,
+                    f"Categoria '{category.name}' adicionada a {count} produtos.",
+                )
+            else:
+                messages.error(request, "Nenhuma categoria selecionada.")
+        else:
+            messages.error(request, "Ação inválida.")
+
+    return redirect("product_list")
 
 
 def product_detail(request, pk):

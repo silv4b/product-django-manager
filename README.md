@@ -8,16 +8,20 @@ O projeto utiliza as seguintes tecnologias:
 
 - Backend: [Python](https://www.python.org/) 3.10+ [Django](https://www.djangoproject.com/) 6.0+
 - Frontend: HTML5, JavaScript (Vanilla)
+- API: [Django Rest Framework](https://www.django-rest-framework.org/), [SimpleJWT](https://django-rest-framework-simplejwt.readthedocs.io/), [drf-spectacular](https://drf-spectacular.readthedocs.io/)
 - Estilização: [Tailwind CSS](https://tailwindcss.com/) v4.0+
 - UI Framework: [Basecoat UI](https://basecoatui.com/)
-- Autenticação: [Django Allauth](https://docs.allauth.org/en/latest/)
-- Banco de Dados: [SQLite3](https://sqlite.org/)
+- Autenticação: [Django Allauth](https://docs.allauth.org/en/latest/) e JWT para API
+- Banco de Dados: [SQLite3](https://sqlite.org/) ou [PostgreSQL](https://www.postgresql.org/)
 - Ícones: [Lucide Icons](https://lucide.dev/) (via CDN)
 
 ## Funcionalidades Principais
 
 - Gestão de Produtos: CRUD completo (Criação, Visualização, Edição e Exclusão) de produtos.
-- Painel de Controle: Dashboard com estatísticas e alternância entre modos de visualização (Grade e Tabela).
+- Dashboard de Estoque: Histórico de movimentações (Entradas/Saídas) com estatísticas detalhadas.
+- Painel de Controle: Alternância entre modos de visualização (Grade e Tabela) persistente por usuário.
+- Histórico de Preços: Rastreamento automático de mudanças de preço com visualização em gráfico (sparkline).
+- API REST: Endpoints para integração com outras aplicações, incluindo documentação Swagger e ReDoc.
 - Visibilidade de Produtos: Suporte para produtos públicos (catálogo global) e privados (visíveis apenas pelo dono).
 - Sistema de Notificações: Toasts globais para feedback em tempo real das ações do usuário.
 - Segurança do Usuário:
@@ -43,26 +47,36 @@ O projeto utiliza as seguintes tecnologias:
    - `.\venv\Scripts\activate`  (Windows)
    - `source venv/bin/activate` (Linux/macOS)
 
-3. Instale as dependências do Django:
-   `pip install django django-allauth` e requirements.txt
+3. Instale as dependências do Python:
+   `pip install -r requirements.txt`
 
 4. Instale as dependências do Node.js:
    `npm install`
 
-5. Execute as migrações do banco de dados:
-   `python manage.py makemigrations`
-   - `python manage.py migrate`
+5. Configure as variáveis de ambiente (Opcional):
+   Crie um arquivo `.env` baseado no `.env.example`. Se não configurado, o sistema usará SQLite por padrão.
+
+6. Execute as migrações do banco de dados:
+   `python manage.py migrate`
 
 ### Executando a Aplicação
 
 Para rodar o projeto, você precisará de dois processos rodando (ou buildar o CSS antes):
 
 1. Compilação do Tailwind CSS (em um terminal):
-   npm run watch
+   `npm run watch`
 
-   (Ou para build de produção: npm run build)
+   (Ou para build de produção: `npm run build`)
 
 2. Servidor de Desenvolvimento (em outro terminal):
-   python manage.py runserver
+   `python manage.py runserver`
 
 A aplicação estará disponível em: <http://127.0.0.1:8000/>
+
+### Acessando a API
+
+A API REST está disponível no prefixo `/api/v1/`.
+Para documentação interativa, acesse:
+
+- **Swagger UI**: <http://127.0.0.1:8000/api/v1/docs/swagger/>
+- **ReDoc**: <http://127.0.0.1:8000/api/v1/docs/redoc/>

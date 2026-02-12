@@ -47,6 +47,11 @@ INSTALLED_APPS = [
     "products",
     "allauth",
     "allauth.account",
+    "rest_framework",
+    "rest_framework.authtoken",
+    "django_filters",
+    "drf_spectacular",
+    "api",
 ]
 
 MIDDLEWARE = [
@@ -164,3 +169,23 @@ STATICFILES_DIRS = [
 ]
 
 STATIC_ROOT = BASE_DIR / "staticfiles"
+
+# --- Django Rest Framework Configuration ---
+REST_FRAMEWORK = {
+    "DEFAULT_AUTHENTICATION_CLASSES": [
+        "rest_framework_simplejwt.authentication.JWTAuthentication",
+        "rest_framework.authentication.SessionAuthentication",
+    ],
+    "DEFAULT_PERMISSION_CLASSES": [
+        "rest_framework.permissions.IsAuthenticated",
+    ],
+    "DEFAULT_SCHEMA_CLASS": "drf_spectacular.openapi.AutoSchema",
+}
+
+# --- drf-spectacular Documentation Settings ---
+SPECTACULAR_SETTINGS = {
+    "TITLE": "Kore Product Manager API",
+    "DESCRIPTION": "API para gerenciamento de produtos, categorias e movimentações de estoque.",
+    "VERSION": "1.0.0",
+    "SERVE_INCLUDE_SCHEMA": False,
+}

@@ -3,14 +3,15 @@
 <html lang="pt-br" class="{{ request.session.theme|default:'light' }}">
 
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Kore</title>
-    <link rel="icon" type="image/x-icon" href="/static/img/favicon.ico">
-    <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
-    <link href="{% static 'css/output.css' %}" rel="stylesheet">
+    <link rel="icon" type="image/x-icon" href="/static/img/favicon.ico" />
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap"
+        rel="stylesheet" />
+    <link href="{% static 'css/output.css' %}" rel="stylesheet" />
     <script src="https://unpkg.com/lucide@latest"></script>
     <script src="https://unpkg.com/htmx.org@1.9.10"></script>
 </head>
@@ -81,28 +82,20 @@
 
                 <button onclick="toggleLogoutModal(true)"
                     class="btn btn-icon btn-ghost btn-sm bg-transparent border-none shadow-none text-foreground hover:bg-muted"
-                    title="Sair">
-                    <i data-lucide="log-out" class="w-4 h-4 text-destructive"></i>
-                </button>
-
+                    title="Sair"><i data-lucide="log-out" class="w-4 h-4 text-destructive"></i></button>
                 {% else %}
-                <a href="{% url 'account_login' %}" {% comment %}
-                    class="btn btn-ghost btn-sm text-foreground hover:bg-muted px-2"> {% endcomment %}
-                    class="btn btn-ghost bg-transparent shadow-none text-foreground hover:bg-muted font-medium h-10 px-4
-                    flex items-center gap-2">
-                    Entrar
-                </a>
+                <a href="{% url 'account_login' %}"
+                    class="btn btn-ghost bg-transparent shadow-none text-foreground hover:bg-muted font-medium h-10 px-4 flex items-center gap-2">Entrar</a>
                 <a href="{% url 'account_signup' %}"
-                    class="btn btn-ghost bg-transparent shadow-none text-foreground hover:bg-muted font-medium h-10 px-4 flex items-center gap-2">
-                    Cadastrar
-                </a>
+                    class="btn btn-ghost bg-transparent shadow-none text-foreground hover:bg-muted font-medium h-10 px-4 flex items-center gap-2">Cadastrar</a>
                 {% endif %}
             </nav>
         </div>
     </header>
 
     <main class="flex-1 container mx-auto px-4 py-8">
-        {% block content %}{% endblock %}
+        {% block content %}
+        {% endblock %}
     </main>
 
     <footer class="border-t border-border py-6">
@@ -115,7 +108,7 @@
     <div id="toast-container" class="toaster">
         {% if messages %}
         {% for message in messages %}
-        {% if "success" in message.tags %}
+        {% if 'success' in message.tags %}
         <div class="toast">
             <div class="toast-content">
                 <i data-lucide="check-circle" class="text-green-600"></i>
@@ -128,7 +121,7 @@
                 </footer>
             </div>
         </div>
-        {% elif "error" in message.tags or "danger" in message.tags %}
+        {% elif 'error' in message.tags or 'danger' in message.tags %}
         <div class="toast">
             <div class="toast-content">
                 <i data-lucide="alert-circle" class="text-destructive"></i>
@@ -141,7 +134,7 @@
                 </footer>
             </div>
         </div>
-        {% elif "warning" in message.tags %}
+        {% elif 'warning' in message.tags %}
         <div class="toast">
             <div class="toast-content">
                 <i data-lucide="alert-triangle" class="text-amber-500"></i>
@@ -203,7 +196,8 @@
     <script src="{% static 'js/main.js' %}" defer></script>
     <script src="{% static 'js/utils.js' %}" defer></script>
 
-    {% block extra_scripts %}{% endblock %}
+    {% block extra_scripts %}
+    {% endblock %}
 </body>
 
 </html>
