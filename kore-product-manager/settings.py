@@ -76,7 +76,7 @@ MIDDLEWARE = [
     "django_browser_reload.middleware.BrowserReloadMiddleware",
 ]
 
-ROOT_URLCONF = "kore-product-manager.urls"
+ROOT_URLCONF = "kore_product_manager.urls"
 
 TEMPLATES = [
     {
@@ -93,7 +93,7 @@ TEMPLATES = [
     },
 ]
 
-WSGI_APPLICATION = "kore-product-manager.wsgi.application"
+WSGI_APPLICATION = "kore_product_manager.wsgi.application"
 
 
 # Database
@@ -114,6 +114,10 @@ if DB_NAME and DB_USER and DB_PASSWORD:
             "PASSWORD": DB_PASSWORD,
             "HOST": DB_HOST,
             "PORT": DB_PORT,
+            "CONN_MAX_AGE": 600,  # 10 minutos de tempo limite de conexões
+            "OPTIONS": {
+                "connect_timeout": 10,  # 10 segundos
+            },
         }
     }
 else:
@@ -173,12 +177,19 @@ ACCOUNT_SIGNUP_FIELDS = ["username", "email*", "password1", "password2"]
 # Static files (CSS, JavaScript, Images)
 # https://docs.djangoproject.com/en/6.0/howto/static-files/
 
-STATIC_URL = "static/"
-STATICFILES_DIRS = [
-    BASE_DIR / "static",
-]
+if DEBUG:
+    STATIC_URL = "static/"
+    STATICFILES_DIRS = [
+        BASE_DIR / "static",
+    ]
+    STATIC_ROOT = BASE_DIR / "staticfiles"
 
-STATIC_ROOT = BASE_DIR / "staticfiles"
+    MEDIA_URL = "/media/"
+    MEDIA_ROOT = BASE_DIR / "media"
+else:
+    # TODO: Configurar storage para produção
+    ...
+
 
 # --- Django Rest Framework Configuration ---
 REST_FRAMEWORK = {
