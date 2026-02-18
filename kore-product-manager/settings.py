@@ -76,7 +76,7 @@ MIDDLEWARE = [
     "django_browser_reload.middleware.BrowserReloadMiddleware",
 ]
 
-ROOT_URLCONF = "kore_product_manager.urls"
+ROOT_URLCONF = "kore-product-manager.urls"
 
 TEMPLATES = [
     {
@@ -93,7 +93,7 @@ TEMPLATES = [
     },
 ]
 
-WSGI_APPLICATION = "kore_product_manager.wsgi.application"
+WSGI_APPLICATION = "kore-product-manager.wsgi.application"
 
 
 # Database

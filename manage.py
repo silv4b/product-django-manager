@@ -7,7 +7,7 @@ import sys
 
 def main():
     """Run administrative tasks."""
-    os.environ.setdefault("DJANGO_SETTINGS_MODULE", "kore_product_manager.settings")
+    os.environ.setdefault("DJANGO_SETTINGS_MODULE", "kore-product-manager.settings")
     try:
         from django.core.management import execute_from_command_line
     except ImportError as exc:
