@@ -3,7 +3,7 @@ name = "kore-product-manager"
 version = "0.1.0"
 description = "Simple product manager using Basecoat UI and Django."
 readme = "README.md"
-requires-python = ">=3.14"
+requires-python = ">=3.13"
 dependencies = [
     "anyio==4.12.1",
     "asgiref==3.11.0",
@@ -34,6 +34,7 @@ dependencies = [
     "django-filter>=24.3",
     "drf-spectacular>=0.27.2",
     "djangorestframework-simplejwt>=5.3.1",
+    "gunicorn>=23.0.0",
 ]
 
 [tool.poe.tasks]
@@ -53,7 +54,7 @@ coveragehtml = { shell = "coverage html" }
 
 # Taks sequences
 [tool.poe.tasks.test]
-sequence = ["coverage", "report", "coveragehtml"]
+sequence = ["coverage", "coveragehtml", "report"]
 
 [tool.poe.tasks.dev]
-sequence = ["npm_watch", "npm_build", "runserver"]
+sequence = ["npm_watch", "runserver"]
