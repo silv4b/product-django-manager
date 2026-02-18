@@ -27,8 +27,6 @@ services:
     volumes:
       - postgres_data:/var/lib/postgresql/data/
     environment:
-      - POSTGRES_DB=basecoat_db
-      - POSTGRES_USER=basecoat_user
       - POSTGRES_PASSWORD=basecoat_pass
     ports:
       - "5432:5432"
