@@ -1,0 +1,16 @@
+.git
+.venv
+__pycache__
+*.pyc
+.env
+.pytest_cache
+htmlcov
+node_modules
+staticfiles
+db.sqlite3
+.coverage
+report.txt
+error.log
+.python-version
+.agent
+.gemini
