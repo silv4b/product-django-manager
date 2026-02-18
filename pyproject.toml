@@ -5,36 +5,33 @@ description = "Simple product manager using Basecoat UI and Django."
 readme = "README.md"
 requires-python = ">=3.13"
 dependencies = [
-    "anyio==4.12.1",
-    "asgiref==3.11.0",
-    "beautifulsoup4>=4.14.3",
-    "coverage>=7.13.3",
-    "crispy-tailwind==1.0.3",
-    "django==6.0.1",
-    "django-allauth==65.14.0",
-    "django-browser-reload==1.21.0",
-    "django-crispy-forms==2.5",
-    "django-stubs>=5.2.9",
-    "django-watchfiles==1.4.0",
-    "idna==3.11",
-    "iniconfig>=2.3.0",
-    "poethepoet>=0.40.0",
-    "psycopg2-binary==2.9.11",
-    "pylance>=2.0.0",
+    "django>=6.0.2",
+    "django-allauth>=65.14.3",
+    "django-cors-headers>=4.9.0",
+    "django-filter>=25.2",
+    "djangorestframework>=3.16.1",
+    "djangorestframework-simplejwt>=5.5.1",
+    "drf-spectacular>=0.29.0",
+    "gunicorn>=25.1.0",
+    "psycopg>=3.3.2",
+    "psycopg2-binary>=2.9.11",
+    "python-dotenv>=1.2.1",
+    "uvicorn>=0.30.1",
+    "whitenoise>=6.11.0",
+]
+
+[dependency-groups]
+dev = [
+    "coverage>=7.13.4",
+    "django-browser-reload>=1.21.0",
+    "django-watchfiles>=1.4.0",
+    "dotenv>=0.9.9",
+    "factory-boy>=3.3.3",
+    "poethepoet>=0.41.0",
     "pytest>=9.0.2",
     "pytest-cov>=7.0.0",
-    "pytest-django>=4.11.1",
+    "pytest-django>=4.12.0",
     "pytest-watch>=4.2.0",
-    "rich>=14.3.2",
-    "sqlparse==0.5.5",
-    "tzdata==2025.3",
-    "python-dotenv==1.0.1",
-    "watchfiles==1.1.1",
-    "djangorestframework>=3.15.2",
-    "django-filter>=24.3",
-    "drf-spectacular>=0.27.2",
-    "djangorestframework-simplejwt>=5.3.1",
-    "gunicorn>=23.0.0",
 ]
 
 [tool.poe.tasks]
@@ -58,3 +55,6 @@ sequence = ["coverage", "coveragehtml", "report"]
 
 [tool.poe.tasks.dev]
 sequence = ["npm_watch", "runserver"]
+
+[tool.poe.tasks.server]
+sequence = ["runserver"]
