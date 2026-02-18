@@ -35,6 +35,7 @@ O projeto utiliza as seguintes tecnologias:
 ### Pré-requisitos
 
 - [uv](https://docs.astral.sh/uv/) (gerenciador de pacotes e ambientes Python).
+  - `pip install uv` ou [chaque a documentação](https://docs.astral.sh/uv/getting-started/installation/).
 - Node.js (para compilação do CSS).
 
 ### Passos para Instalação
