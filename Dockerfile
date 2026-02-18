@@ -56,4 +56,4 @@ RUN python manage.py collectstatic --noinput
 EXPOSE 8000
 
 # Run the application with gunicorn
-CMD ["gunicorn", "--bind", "0.0.0.0:8000", "kore_product_manager.wsgi:application"]
+CMD ["gunicorn", "--bind", "0.0.0.0:8000", "kore-product-manager.wsgi:application"]

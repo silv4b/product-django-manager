@@ -14,3 +14,6 @@ error.log
 .python-version
 .agent
 .gemini
+api/tests
+products/tests
+tests
