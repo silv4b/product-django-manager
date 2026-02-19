@@ -28,9 +28,10 @@ load_dotenv(BASE_DIR / ".env")
 SECRET_KEY = "django-insecure-+0j=j2v=!mdj^3%8rtfdm@bq%m00mr_9ald%t2&47w@g(4nxb0"
 
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = True
+# DEBUG = True
+DEBUG = os.getenv("DEBUG", "False").lower() == "true"
 
-ALLOWED_HOSTS = []
+ALLOWED_HOSTS = ["*"]
 
 CSRF_TRUSTED_ORIGINS = [
     "http://localhost:8000",
@@ -52,8 +53,6 @@ INSTALLED_APPS = [
     "django.contrib.sessions",
     "django.contrib.messages",
     "django.contrib.staticfiles",
-    "django_browser_reload",  # Django Browser Reload: https://github.com/adamchainz/django-browser-reload
-    "django_watchfiles",  # Django Watchfiles: https://github.com/adamchainz/django-watchfiles
     "products",
     "allauth",
     "allauth.account",
@@ -66,6 +65,7 @@ INSTALLED_APPS = [
 
 MIDDLEWARE = [
     "django.middleware.security.SecurityMiddleware",
+    "whitenoise.middleware.WhiteNoiseMiddleware",
     "django.contrib.sessions.middleware.SessionMiddleware",
     "django.middleware.common.CommonMiddleware",
     "django.middleware.csrf.CsrfViewMiddleware",
@@ -73,8 +73,19 @@ MIDDLEWARE = [
     "django.contrib.messages.middleware.MessageMiddleware",
     "django.middleware.clickjacking.XFrameOptionsMiddleware",
     "allauth.account.middleware.AccountMiddleware",
-    "django_browser_reload.middleware.BrowserReloadMiddleware",
 ]
+
+if DEBUG:
+    try:
+        INSTALLED_APPS += [
+            "django_browser_reload",
+            "django_watchfiles",
+        ]
+        MIDDLEWARE += [
+            "django_browser_reload.middleware.BrowserReloadMiddleware",
+        ]
+    except Exception:
+        ...
 
 ROOT_URLCONF = "kore-product-manager.urls"
 
@@ -151,7 +162,7 @@ AUTH_PASSWORD_VALIDATORS = [
 # Internationalization
 # https://docs.djangoproject.com/en/6.0/topics/i18n/
 
-LANGUAGE_CODE = "pt-br"
+LANGUAGE_CODE = "pt-BR"
 
 TIME_ZONE = "America/Sao_Paulo"
 
@@ -177,19 +188,26 @@ ACCOUNT_SIGNUP_FIELDS = ["username", "email*", "password1", "password2"]
 # Static files (CSS, JavaScript, Images)
 # https://docs.djangoproject.com/en/6.0/howto/static-files/
 
-if DEBUG:
-    STATIC_URL = "static/"
-    STATICFILES_DIRS = [
-        BASE_DIR / "static",
-    ]
-    STATIC_ROOT = BASE_DIR / "staticfiles"
+STATIC_URL = "static/"
+STATIC_ROOT = BASE_DIR / "staticfiles"
+STATICFILES_DIRS = [
+    BASE_DIR / "static",
+]
 
+if DEBUG:
     MEDIA_URL = "/media/"
     MEDIA_ROOT = BASE_DIR / "media"
 else:
     # TODO: Configurar storage para produção
     ...
 
+STATICFILES_STORAGE = "whitenoise.storage.CompressedManifestStaticFilesStorage"
+
+# Allauth settings
+AUTHENTICATION_BACKENDS = [
+    "django.contrib.auth.backends.ModelBackend",
+    "allauth.account.auth_backends.AuthenticationBackend",
+]
 
 # --- Django Rest Framework Configuration ---
 REST_FRAMEWORK = {
