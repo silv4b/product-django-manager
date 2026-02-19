@@ -1,0 +1,28 @@
+name: Homolog, Release
+
+on: workflow_dispatch
+
+jobs:
+  push:
+    runs-on: ubuntu-latest
+    permissions:
+      packages: write
+      contents: read
+
+    steps:
+      - uses: actions/checkout@v4 # Atualizado para v4
+
+      - name: Log in to registry
+        # Usando o token automático do próprio GitHub (mais seguro)
+        run: echo "${{ secrets.GITHUB_TOKEN }}" | docker login ghcr.io -u ${{ github.actor }} --password-stdin
+
+      - name: Build and Push images
+        run: |
+          # O GHCR exige que o nome da imagem seja todo em MINÚSCULO
+          # Convertendo o nome do repositório para evitar erros de permissão
+          IMAGE_ID=$(echo "ghcr.io/${{ github.repository }}" | tr '[:upper:]' '[:lower:]')
+
+          echo "Buildando imagem: $IMAGE_ID"
+
+          docker build -t $IMAGE_ID:latest .
+          docker push $IMAGE_ID:latest
