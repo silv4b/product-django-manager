@@ -25,32 +25,27 @@ WORKDIR /app
 
 # Install system dependencies
 RUN apt-get update && apt-get install -y --no-install-recommends \
-    libpq-dev \
+    libpq-dev netcat-traditional \
     && rm -rf /var/lib/apt/lists/*
 
 # Copy the virtual environment
 COPY --from=builder /app/.venv /app/.venv
 
-# Copy the frontend assets
+# Copy the frontend assets (output do Tailwind/Node)
 COPY --from=frontend-builder /app/static/css/output.css ./static/css/output.css
 
-# Copy the rest of the application code [cite: 3]
+# Copy the rest of the application code
 COPY . .
 
-# Ensure the .env file is handled [cite: 4]
-RUN if [ -f .env.example ]; then cp .env.example .env; fi
-
-# Collect static files
-RUN python manage.py collectstatic --noinput
-
 # --- CONFIGURAÇÃO DO ENTRYPOINT ---
-# Copia o script, dá permissão de execução e define como ponto de entrada
-COPY entrypoint.sh /entrypoint.sh
-RUN chmod +x /entrypoint.sh
-ENTRYPOINT ["/entrypoint.sh"]
+# Copiamos para o WORKDIR atual (/app) e garantimos permissão
+RUN chmod +x /app/entrypoint.sh
 
-# Expose the port the app runs on
+# Removi o "RUN collectstatic" daqui.
+# Ele agora será executado pelo entrypoint.sh no boot do container.
+
 EXPOSE 8005
 
-# O CMD agora é passado como argumento para o entrypoint.sh [cite: 1]
+ENTRYPOINT ["/app/entrypoint.sh"]
+
 CMD ["gunicorn", "--bind", "0.0.0.0:8000", "kore-product-manager.wsgi:application"]
