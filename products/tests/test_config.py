@@ -1,16 +1,19 @@
 """
-Test Configuration for Kore Product Manager
+Configuração de Testes para o Kore Product Manager
 
-This module provides configuration for running tests efficiently.
+Este módulo fornece configuração para executar testes de forma eficiente.
+Define listas de testes para diferentes propósitos (rápido, completo, etc).
 """
 
-# Quick test suite for development
+# Suíte de testes rápida para desenvolvimento
+# Executa apenas testes de modelos e formulários
 QUICK_TESTS = [
     "products.tests.test_models",
     "products.tests.test_forms",
 ]
 
-# Full test suite including integration tests
+# Suíte de testes completa incluindo testes de integração
+# Inclui modelos, formulários, views e integração
 FULL_TESTS = [
     "products.tests.test_models",
     "products.tests.test_forms",
@@ -18,17 +21,20 @@ FULL_TESTS = [
     "products.tests.test_integration",
 ]
 
-# Model tests only (fastest)
+# Testes de modelos apenas (mais rápido)
+# Executa apenas testes de modelos do Django
 MODEL_TESTS = [
     "products.tests.test_models",
 ]
 
-# View tests only
+# Testes de views apenas
+# Executa apenas testes de visualização do Django
 VIEW_TESTS = [
     "products.tests.test_views",
 ]
 
-# Integration tests only (slowest)
+# Testes de integração apenas (mais lento)
+# Executa testes de fluxo de trabalho completo
 INTEGRATION_TESTS = [
     "products.tests.test_integration",
 ]
@@ -36,10 +42,13 @@ INTEGRATION_TESTS = [
 
 def run_test_suite(suite_type="quick"):
     """
-    Run test suite based on type
+    Executa a suíte de testes baseada no tipo especificado.
 
     Args:
-        suite_type: 'quick', 'full', 'models', 'views', 'integration'
+        suite_type: Tipo de suíte de testes - 'quick', 'full', 'models', 'views' ou 'integration'
+
+    Returns:
+        Número de falhas nos testes executados.
     """
     import django
     from django.conf import settings

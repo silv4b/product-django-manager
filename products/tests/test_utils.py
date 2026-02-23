@@ -1,5 +1,5 @@
 """
-Test utilities and helper functions for the products app.
+Utilitários e funções auxiliares para testes do aplicativo de produtos.
 """
 
 from django.test import TestCase
@@ -9,7 +9,10 @@ from products.tests.factories import (
 
 
 class BaseTestCase(TestCase):
-    """Base test case with common setup and utilities"""
+    """
+    Classe base de teste com configuração comum e utilitários.
+    Fornece setup padrão com cliente, usuário e outros usuários para testes.
+    """
 
     def setUp(self):
         self.client = Client()

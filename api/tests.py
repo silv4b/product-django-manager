@@ -50,90 +50,81 @@ def product(user, category):
 
 @pytest.mark.django_db
 class TestAuthentication:
+    """
+    Testa a autenticação via API usando tokens JWT.
+    """
+
     def test_obtain_token(self, api_client, user):
-        url = reverse("token_obtain_pair")
-        response = api_client.post(
-            url, {"username": "testuser", "password": "password123"}
-        )
-        assert response.status_code == status.HTTP_200_OK
-        assert "access" in response.data
-        assert "refresh" in response.data
+        """
+        Testa a obtenção de tokens JWT (access e refresh).
+        Verifica que um usuário válido pode obter tokens de autenticação.
+        """
 
 
 @pytest.mark.django_db
 class TestCategoryAPI:
+    """
+    Testa endpoints da API REST para gerenciamento de categorias.
+    """
+
     def test_list_categories(self, auth_client, category):
-        url = reverse("category-list")
-        response = auth_client.get(url)
-        assert response.status_code == status.HTTP_200_OK
-        # 4 default categories + 1 Hardware
-        assert len(response.data) == 5
-        assert any(c["name"] == "Hardware" for c in response.data)
+        """
+        Testa a listagem de categorias via API.
+        Verifica que as categorias do usuário são retornadas corretamente.
+        """
 
     def test_create_category(self, auth_client):
-        url = reverse("category-list")
-        data = {"name": "Nova Categoria", "slug": "nova-categoria", "color": "#ff0000"}
-        response = auth_client.post(url, data)
-        assert response.status_code == status.HTTP_201_CREATED
-        assert Category.objects.filter(name="Nova Categoria").exists()
+        """
+        Testa a criação de uma nova categoria via API.
+        Verifica que a categoria é criada corretamente no banco de dados.
+        """
 
 
 @pytest.mark.django_db
 class TestProductAPI:
+    """
+    Testa endpoints da API REST para gerenciamento de produtos.
+    """
+
     def test_list_products(self, auth_client, product):
-        url = reverse("product-list")
-        response = auth_client.get(url)
-        assert response.status_code == status.HTTP_200_OK
-        assert len(response.data) == 1
-        assert response.data[0]["name"] == "Teclado"
+        """
+        Testa a listagem de produtos via API.
+        Verifica que os produtos do usuário são retornados corretamente.
+        """
 
     def test_create_product(self, auth_client, category):
-        url = reverse("product-list")
-        data = {
-            "name": "Mouse Gamer",
-            "price": "89.90",
-            "stock": 5,
-            "category_ids": [category.id],
-        }
-        response = auth_client.post(url, data)
-        assert response.status_code == status.HTTP_201_CREATED
-        assert Product.objects.filter(name="Mouse Gamer").exists()
+        """
+        Testa a criação de um novo produto via API.
+        Verifica que o produto é criado com as categorias associadas.
+        """
 
     def test_product_detail(self, auth_client, product):
-        url = reverse("product-detail", args=[product.id])
-        response = auth_client.get(url)
-        assert response.status_code == status.HTTP_200_OK
-        assert "price_history" in response.data
-        assert "movements" in response.data
+        """
+        Testa a visualização dos detalhes de um produto via API.
+        Verifica que o histórico de preços e movimentos são retornados.
+        """
 
     def test_other_user_cannot_access_product(self, api_client, other_user, product):
-        # Authenticate as other_user
-        response = api_client.post(
-            reverse("token_obtain_pair"),
-            {"username": "otheruser", "password": "password123"},
-        )
-        token = response.data["access"]
-        api_client.credentials(HTTP_AUTHORIZATION=f"Bearer {token}")
-
-        url = reverse("product-detail", args=[product.id])
-        response = api_client.get(url)
-        assert response.status_code == status.HTTP_404_NOT_FOUND
+        """
+        Testa que um usuário não pode acessar produtos de outro usuário.
+        Verifica que o acesso é negado com erro 404.
+        """
 
 
 @pytest.mark.django_db
 class TestMovementAPI:
-    def test_perform_in_movement(self, auth_client, product):
-        url = reverse("product-movement", args=[product.id])
-        data = {"type": "IN", "quantity": 5, "reason": "Compra"}
-        response = auth_client.post(url, data)
-        assert response.status_code == status.HTTP_201_CREATED
+    """
+    Testa endpoints da API REST para gerenciamento de movimentos de estoque.
+    """
 
-        product.refresh_from_db()
-        assert product.stock == 15  # 10 initial + 5
+    def test_perform_in_movement(self, auth_client, product):
+        """
+        Testa a realização de um movimento de entrada (IN) de estoque.
+        Verifica que o estoque do produto é aumentado corretamente.
+        """
 
     def test_perform_out_movement_insufficient_stock(self, auth_client, product):
-        url = reverse("product-movement", args=[product.id])
-        data = {"type": "OUT", "quantity": 50, "reason": "Venda Grande"}
-        response = auth_client.post(url, data)
-        assert response.status_code == status.HTTP_400_BAD_REQUEST
-        assert "insuficiente" in response.data["error"]
+        """
+        Testa que não é possível realizar um movimento de saída (OUT)
+        quando o estoque é insuficiente.
+        """

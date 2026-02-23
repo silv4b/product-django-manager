@@ -10,7 +10,10 @@ from products.tests.factories import UserFactory, CategoryFactory, ProductFactor
 
 
 class SimpleProductTest(TestCase):
-    """Exemplo de teste simplificado com force_login"""
+    """
+    Exemplo de teste simplificado com force_login.
+    Demonstra a criação e listagem básica de produtos.
+    """
 
     def setUp(self):
         super().setUp()
@@ -18,7 +21,10 @@ class SimpleProductTest(TestCase):
         self.client.force_login(self.user)  # ✅ Sem senha!
 
     def test_create_product_simple(self):
-        """Teste simples de criação de produto"""
+        """
+        Teste simples de criação de produto.
+        Cria um produto com dados válidos e verifica o redirecionamento.
+        """
         # Dados válidos
         data = {
             "name": "Test Product",
@@ -35,7 +41,10 @@ class SimpleProductTest(TestCase):
         self.assertTrue(Product.objects.filter(name="Test Product").exists())
 
     def test_list_products_simple(self):
-        """Teste simples de listagem de produtos"""
+        """
+        Teste simples de listagem de produtos.
+        Cria produtos e verifica que eles aparecem na listagem.
+        """
         # Criar produtos
         ProductFactory.create(user=self.user, name="Product 1")
         ProductFactory.create(user=self.user, name="Product 2")
@@ -50,10 +59,15 @@ class SimpleProductTest(TestCase):
 
 
 class UnauthenticatedProductTest(TestCase):
-    """Teste sem autenticação - para verificar redirecionamentos"""
+    """
+    Teste sem autenticação - para verificar redirecionamentos.
+    Verifica que usuários não autenticados são redirecionados para login.
+    """
 
     def test_unauthenticated_redirected(self):
-        """Verifica que usuário não autenticado é redirecionado"""
+        """
+        Verifica que usuário não autenticado é redirecionado para a página de login.
+        """
         response = self.client.get(reverse("product_list"))
 
         # Deve redirecionar para login

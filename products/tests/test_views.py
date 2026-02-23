@@ -15,6 +15,11 @@ from products.tests.test_utils import BaseTestCase
 
 
 class ProductViewTest(BaseTestCase):
+    """
+    Testa as views de produto.
+    Verifica criação, edição, exclusão, listagem e detalhes de produtos.
+    """
+
     def setUp(self):
         self.client = Client()
         self.user = UserFactory.create_admin()
@@ -24,7 +29,10 @@ class ProductViewTest(BaseTestCase):
         self.client.force_login(self.user)
 
     def test_product_list_view_authenticated(self):
-        """Test product list view for authenticated user"""
+        """
+        Testa a view de listagem de produtos para usuário autenticado.
+        Verifica que apenas os produtos do usuário são mostrados.
+        """
         ProductFactory.create(user=self.user, name="Product 1")
         ProductFactory.create(user=self.user, name="Product 2")
         ProductFactory.create(user=self.other_user, name="Other Product")
@@ -39,14 +47,19 @@ class ProductViewTest(BaseTestCase):
         self.assertContains(response, "Meus Produtos")
 
     def test_product_list_view_unauthenticated(self):
-        """Test product list view redirects unauthenticated user"""
+        """
+        Testa que a view de listagem redireciona usuário não autenticado para login.
+        """
         self.client.logout()
         response = self.client.get(reverse("product_list"))
 
         self.assertEqual(response.status_code, 302)  # Redirect to login
 
     def test_product_list_with_filters(self):
-        """Test product list with various filters"""
+        """
+        Testa a listagem de produtos com filtros de busca.
+        Verifica que a busca por texto funciona corretamente.
+        """
         ProductFactory.create(
             user=self.user,
             name="Laptop",
@@ -69,7 +82,10 @@ class ProductViewTest(BaseTestCase):
         self.assertNotContains(response, "Phone")
 
     def test_product_list_with_sorting(self):
-        """Testa se a ordenação da lista de produtos funciona corretamente"""
+        """
+        Testa a ordenação da lista de produtos.
+        Verifica que os produtos são ordenados corretamente por nome.
+        """
         # 1. Criar produtos em ordem aleatória
         ProductFactory.create(user=self.user, name="B Product")
         ProductFactory.create(user=self.user, name="A Product")
@@ -318,6 +334,11 @@ class ProductViewTest(BaseTestCase):
 
 
 class CategoryViewTest(BaseTestCase):
+    """
+    Testa as views de categoria.
+    Verifica criação, edição, exclusão, listagem e duplicação de categorias.
+    """
+
     def setUp(self):
         self.client = Client()
         self.user = UserFactory.create_admin()
@@ -429,6 +450,11 @@ class CategoryViewTest(BaseTestCase):
 
 
 class PublicCatalogViewTest(BaseTestCase):
+    """
+    Testa as views do catálogo público de produtos.
+    Verifica a visualização de produtos públicos por usuários autenticados e anônimos.
+    """
+
     def setUp(self):
         self.client = Client()
         self.user = UserFactory.create_admin()
@@ -477,6 +503,11 @@ class PublicCatalogViewTest(BaseTestCase):
 
 
 class AccountViewTest(BaseTestCase):
+    """
+    Testa as views de conta de usuário.
+    Verifica perfil, atualização e exclusão de conta.
+    """
+
     def setUp(self):
         self.client = Client()
         self.user = UserFactory.create_admin()
@@ -528,6 +559,11 @@ class AccountViewTest(BaseTestCase):
 
 
 class UtilityViewTest(BaseTestCase):
+    """
+    Testa as views utilitárias.
+    Verifica alternância de tema, modo de visualização e logout.
+    """
+
     def setUp(self):
         self.client = Client()
         self.user = UserFactory.create_admin()
@@ -573,6 +609,11 @@ class UtilityViewTest(BaseTestCase):
 
 
 class MessageTest(BaseTestCase):
+    """
+    Testa as mensagens de feedback (toast messages).
+    Verifica que mensagens de sucesso e erro são exibidas corretamente.
+    """
+
     def setUp(self):
         self.user = UserFactory.create_admin()
         self.client.force_login(self.user)

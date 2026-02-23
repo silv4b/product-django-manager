@@ -10,7 +10,10 @@ from datetime import timedelta
 
 
 class ProductWorkflowTest(BaseTestCase):
-    """Test complete user workflows for product management"""
+    """
+    Testa fluxos de trabalho completos do usuário para gerenciamento de produtos.
+    Inclui testes de ciclo de vida, filtragem e catálogo público.
+    """
 
     def setUp(self):
         self.client = Client()
@@ -19,7 +22,11 @@ class ProductWorkflowTest(BaseTestCase):
         self.client.force_login(self.user)
 
     def test_complete_product_lifecycle(self):
-        """Test complete product lifecycle from creation to deletion"""
+        """
+        Testa o ciclo de vida completo de um produto desde a criação até a exclusão.
+        Inclui: criação, listagem,visualização de detalhes, atualização,
+        histórico de preços e exclusão do produto.
+        """
         category = CategoryFactory.create(name="Test Category", user=self.user)
 
         # Criando o produto
@@ -93,7 +100,11 @@ class ProductWorkflowTest(BaseTestCase):
         self.assertFalse(Product.objects.filter(pk=product.pk).exists())
 
     def test_product_filtering_workflow(self):
-        """Test product filtering and sorting workflow with multiple criteria"""
+        """
+        Testa o fluxo de filtragem e ordenação de produtos com múltiplos critérios.
+        Inclui: busca por texto, filtro por categoria, faixa de preço,
+        estoque mínimo e ordenação por preço.
+        """
 
         category_electronics = CategoryFactory.create(name="Electronics")
         category_books = CategoryFactory.create(name="Books")
@@ -181,7 +192,10 @@ class ProductWorkflowTest(BaseTestCase):
         self.assertEqual(prices, expected_prices)
 
     def test_public_catalog_workflow(self):
-        """Test public catalog viewing workflow"""
+        """
+        Testa o fluxo de visualização do catálogo público de produtos.
+        Verifica que produtos públicos são visíveis e privados não são expostos.
+        """
         other_user = UserFactory.create(username="seller")
         category = CategoryFactory.create(name="Gadgets")
 
@@ -229,7 +243,10 @@ class ProductWorkflowTest(BaseTestCase):
 
 
 class CategoryWorkflowTest(BaseTestCase):
-    """Test complete user workflows for category management"""
+    """
+    Testa fluxos de trabalho completos do usuário para gerenciamento de categorias.
+    Inclui testes de ciclo de vida completo das categorias.
+    """
 
     def setUp(self):
         self.client = Client()
@@ -237,7 +254,10 @@ class CategoryWorkflowTest(BaseTestCase):
         self.client.force_login(self.user)
 
     def test_complete_category_lifecycle(self):
-        """Test complete category lifecycle from creation to deletion"""
+        """
+        Testa o ciclo de vida completo de uma categoria desde a criação até a exclusão.
+        Inclui: criação, listagem, atualização, duplicação e exclusão da categoria.
+        """
         # Cria a categoria
         create_data = {
             "name": "New Category",
@@ -313,7 +333,10 @@ class CategoryWorkflowTest(BaseTestCase):
 
 
 class UserAccountWorkflowTest(BaseTestCase):
-    """Test user account management workflows"""
+    """
+    Testa fluxos de trabalho de gerenciamento de conta do usuário.
+    Inclui registro, perfil, tema e preferências de visualização.
+    """
 
     def setUp(self):
         self.client = Client()
@@ -321,7 +344,11 @@ class UserAccountWorkflowTest(BaseTestCase):
         self.client.force_login(self.user)
 
     def test_complete_user_registration_and_profile_workflow(self):
-        """Test user registration and profile management"""
+        """
+        Testa o fluxo de registro de usuário e gerenciamento de perfil.
+        Inclui: atualização de perfil (nome de usuário/email), alternância de tema
+        e configuração de modo de visualização.
+        """
         # 1. Login
         self.client.login(username=self.user.username, password="testpass123")
 
@@ -364,7 +391,10 @@ class UserAccountWorkflowTest(BaseTestCase):
 
 
 class PriceHistoryWorkflowTest(BaseTestCase):
-    """Test price history tracking workflows"""
+    """
+    Testa fluxos de trabalho de rastreamento de histórico de preços.
+    Verifica a criação automática de registros de histórico quando preços mudam.
+    """
 
     def setUp(self):
         self.client = Client()
@@ -372,7 +402,11 @@ class PriceHistoryWorkflowTest(BaseTestCase):
         self.client.force_login(self.user)
 
     def test_price_history_tracking_workflow(self):
-        """Test automatic price history tracking"""
+        """
+        Testa o rastreamento automático do histórico de preços.
+        Verifica que o histórico é criado quando um produto é criado e quando
+        o preço é atualizado, incluindo filtragem por data.
+        """
         # Create product
         product = ProductFactory.create(user=self.user, price=Decimal("100.00"))
 
@@ -427,7 +461,10 @@ class PriceHistoryWorkflowTest(BaseTestCase):
 
 
 class ErrorHandlingWorkflowTest(BaseTestCase):
-    """Test error handling in various workflows"""
+    """
+    Testa o tratamento de erros em vários fluxos de trabalho.
+    Inclui cenários de permissão negada, validação de formulários e erros 404.
+    """
 
     def setUp(self):
         self.client = Client()
@@ -436,7 +473,10 @@ class ErrorHandlingWorkflowTest(BaseTestCase):
         self.client.force_login(self.user)
 
     def test_permission_denied_workflow(self):
-        """Testa cenários onde o acesso deve ser negado ou protegido"""
+        """
+        Testa cenários onde o acesso deve ser negado ou protegido.
+        Verifica que usuários não podem acessar, editar ou excluir produtos privados de outros usuários.
+        """
         # Cria um produto que NÃO pertence ao usuário logado
         private_product = ProductFactory.create(
             user=self.other_user, name="Private Item", is_public=False
@@ -465,7 +505,10 @@ class ErrorHandlingWorkflowTest(BaseTestCase):
         self.assertEqual(response.status_code, 404)
 
     def test_form_validation_workflow(self):
-        """Test form validation errors for products and categories"""
+        """
+        Testa erros de validação de formulários para produtos e categorias.
+        Verifica que dados inválidos retornam erros apropriados.
+        """
 
         # Teste de criação de produto inválido
         # Dados que violam as regras do Model/Form
@@ -510,7 +553,10 @@ class ErrorHandlingWorkflowTest(BaseTestCase):
         )
 
     def test_not_found_workflow(self):
-        """Test 404 scenarios"""
+        """
+        Testa cenários de erro 404 (página não encontrada).
+        Verifica que produtos, categorias e usuários inexistentes retornam 404.
+        """
         # Non-existent product
         response = self.client.get(reverse("product_detail", kwargs={"pk": 99999}))
         self.assertEqual(response.status_code, 404)
